@@ -54,3 +54,7 @@ The following is the name of the specific folder under the remote previously spe
 ### 11. I put the command in a separate file called `run_rclonesync.sh`. Remember to change the execution privileges of the script.
 
 `chmod +x run_rclonesync.sh`
+
+### 12. I used the following crontab settings to run the command every 3 hours:
+
+`0 3 * * * bash /home/pi/devel/rpi-books/run_rclonesync.sh >> /home/pi/devel/rpi-books/logs/run_rclonesync.out 2>&1`
