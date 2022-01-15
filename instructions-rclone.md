@@ -50,3 +50,7 @@ The following is the name of the specific folder under the remote previously spe
 ### 10. Now, you can run the following command whenever you wish to sync your folders (e.g., using a cronjob):
 
 `rclonesync --verbose $REMOTE_NAME:/$REMOTE_FOLDER $LOCAL_FOLDER`
+
+### 11. I put the command in a separate file called `run_rclonesync.sh`. Remember to change the execution privileges of the script.
+
+`chmod +x run_rclonesync.sh`
