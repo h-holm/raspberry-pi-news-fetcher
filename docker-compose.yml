@@ -1,0 +1,9 @@
+version: '3'
+services:
+  rpi3-debian:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./logs:/calibre-news-fetcher/logs
+      - ./recipes:/calibre-news-fetcher/recipes
