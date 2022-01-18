@@ -8,10 +8,10 @@
 
 ### 3. Fetch news recipes for sources you are interested in, e.g.:
 
-`wget https://raw.githubusercontent.com/kovidgoyal/calibre/master/recipes/economist.recipe`
-`wget https://raw.githubusercontent.com/kovidgoyal/calibre/268d1d991c657c6625920194b3d7c3f98c34a98d/recipes/people_daily.recipe`
-`wget https://raw.githubusercontent.com/kovidgoyal/calibre/master/recipes/faznet.recipe`
-`wget https://raw.githubusercontent.com/kovidgoyal/calibre/master/recipes/lemonde_dip.recipe`
+- `wget https://raw.githubusercontent.com/kovidgoyal/calibre/master/recipes/economist.recipe`
+- `wget https://raw.githubusercontent.com/kovidgoyal/calibre/268d1d991c657c6625920194b3d7c3f98c34a98d/recipes/people_daily.recipe`
+- `wget https://raw.githubusercontent.com/kovidgoyal/calibre/master/recipes/faznet.recipe`
+- `wget https://raw.githubusercontent.com/kovidgoyal/calibre/master/recipes/lemonde_dip.recipe`
 
 ### 4. Place recipes in `./recipes` folder.
 
