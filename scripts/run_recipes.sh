@@ -14,20 +14,19 @@ echo $timestamp
 
 for recipe in $RECIPES
 do
-  echo $recipe
   recipe_stem=${recipe##*/}
-  echo $recipe_stem
-  echo ${RECIPE_TO_SOURCE_HASHMAP[$recipe_stem]}
-  # if [ ${RECIPE_TO_SOURCE_HASHMAP[$recipe_stem]+_} ]; then output_name=${RECIPE_TO_SOURCE_HASHMAP[$recipe_stem]}; else output_name=$recipe_stem; fi
   if [ "${RECIPE_TO_SOURCE_HASHMAP[$recipe_stem]+abc}" ]; then # Return 'abc' if key exists. https://stackoverflow.com/questions/13219634/easiest-way-to-check-for-an-index-or-a-key-in-an-array
-    output_name=${RECIPE_TO_SOURCE_HASHMAP[$recipe_stem]}
+    recipe_name=${RECIPE_TO_SOURCE_HASHMAP[$recipe_stem]}.recipe
   else
-    output_name=$recipe_stem
+    recipe_name=$recipe_stem
   fi
-  echo "Fetching news from $output_name..."
-  output_name="$output_name-$timestamp.epub"
+  echo "Fetching news from $recipe_name..."
+  output_name="$recipe_name-$timestamp.epub"
   echo "File output name will be $output_name"
-  # ebook-convert $recipe $output_name
+
+  # ebook-convert $recipe $output_name # Uses locally stored recipe.
+  echo "Using command 'ebook-convert \"$recipe_name\" \"$output_name\"'"
+  ebook-convert "$recipe_name" "$output_name" # Uses latest recipe shipped with calibre version you're using.
   sleep 3
   # echo "Adding $recipe to
   echo
