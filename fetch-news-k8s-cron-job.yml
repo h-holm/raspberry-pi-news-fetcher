@@ -3,7 +3,7 @@ apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: news-fetch-cron
-  namespace: news-fetch-ns
+  namespace: default
 spec:
   schedule: "0 6 * * 5"
   concurrencyPolicy: Forbid
