@@ -7,3 +7,7 @@ services:
     volumes:
       - ./logs:/calibre-news-fetcher/logs
       - ./recipes:/calibre-news-fetcher/recipes
+      - ./scripts/run_recipes.sh:/calibre-news-fetcher/run_recipes.sh
+      - ./fetched-news:/calibre-news-fetcher/fetched-news
+    stdin_open: true # docker run -i
+    tty: true # docker run -t
