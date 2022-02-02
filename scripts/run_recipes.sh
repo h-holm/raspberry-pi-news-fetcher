@@ -1,13 +1,13 @@
 #!/bin/bash
 # Script to fetch news from sources specified in $RECIPES array using Calibre's 'ebook-convert' CLI command.
 
-RECIPES=("The Economist" "人民日报" "FAZ.NET" "Le Monde")
+declare -a RECIPES=("The Economist" "人民日报" "FAZ.NET" "Le Monde")
 FETCHED_NEWS_FOLDER="$HOME/devel/rpi-books/fetched-news/"
 
 timestamp=$(date +%Y-%m-%d-%H%M)
 echo "Timestamp: $timestamp"
 
-for recipe in $RECIPES; do
+for recipe in "${RECIPES[@]}"; do
   echo
   echo "Fetching news from $recipe..."
   output_name="$recipe-$timestamp.epub"
