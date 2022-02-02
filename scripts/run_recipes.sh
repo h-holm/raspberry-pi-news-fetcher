@@ -15,7 +15,7 @@ for recipe in "${RECIPES[@]}"; do
 
   # ebook-convert $recipe $output_name # Uses locally stored recipe.
   echo "Using command 'ebook-convert \"$recipe.recipe\" \"$output_name\"'"
-  ebook-convert \""$recipe.recipe"\" \""$output_name"\" # Uses latest recipe shipped with calibre version you're using.
+  ebook-convert "$recipe.recipe" "$output_name" # Uses latest recipe shipped with calibre version you're using.
   sleep 3
 
   mv $output_name $FETCHED_NEWS_FOLDER
