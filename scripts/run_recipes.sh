@@ -2,7 +2,7 @@
 # Script to fetch news from sources specified in $RECIPES array using Calibre's 'ebook-convert' CLI command.
 
 declare -a RECIPES=("The Economist" "人民日报" "FAZ.NET" "Le Monde")
-FETCHED_NEWS_FOLDER="$HOME/devel/rpi-books/fetched-news/"
+FETCHED_NEWS_FOLDER="fetched-news"
 
 timestamp=$(date +%Y-%m-%d-%H%M)
 echo "Timestamp: $timestamp"
@@ -15,7 +15,7 @@ for recipe in "${RECIPES[@]}"; do
 
   # ebook-convert $recipe $output_name # Uses locally stored recipe.
   echo "Using command 'ebook-convert \"$recipe.recipe\" \"$output_name\"'"
-  ebook-convert \"$recipe.recipe\" \"$output_name\" # Uses latest recipe shipped with calibre version you're using.
+  ebook-convert \""$recipe.recipe"\" \""$output_name"\" # Uses latest recipe shipped with calibre version you're using.
   sleep 3
 
   mv $output_name $FETCHED_NEWS_FOLDER
