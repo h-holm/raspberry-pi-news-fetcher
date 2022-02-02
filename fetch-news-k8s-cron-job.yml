@@ -2,7 +2,7 @@ apiVersion: batch/v1
 # apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
-  name: news-fetch-cron
+  name: fetch-news
   namespace: default
 spec:
   schedule: "0 6 * * 5"
