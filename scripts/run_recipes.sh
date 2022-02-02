@@ -18,6 +18,6 @@ for recipe in "${RECIPES[@]}"; do
   ebook-convert "$recipe.recipe" "$output_name" # Uses latest recipe shipped with calibre version you're using.
   sleep 3
 
-  mv $output_name $FETCHED_NEWS_FOLDER
+  mv "$output_name" "$FETCHED_NEWS_FOLDER/"
   echo "Moved $output_name to $FETCHED_NEWS_FOLDER"
 done
