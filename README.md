@@ -2,7 +2,7 @@
 
 More precisely, the `ebook-convert` command in the Calibre CLI is used to fetch news. Since Calibre cannot be installed on Raspbian as of writing (2022-02-02), I set up Calibre on a Docker container running on my Raspberry Pi. I schedule the container to run the `scripts/run_recipes.sh` script (which runs `ebook-convert`) weekly by setting it up on a K3s CronJob (K3s is a small K8s install capable of running on a Raspberry Pi).
 
-For the Dropbox syncing, I use rclone and rclonesync. New news epubs are added to the synced Dropbox folder. News older than 2 weeks are removed.
+For the Dropbox syncing, I use `rclone` and `rclonesync`. New news epubs are added to the synced Dropbox folder. News older than 2 weeks are removed.
 
 #### Dockerfile
 
