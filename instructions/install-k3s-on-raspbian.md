@@ -1,10 +1,10 @@
-Mainly: https://medium.com/codex/which-kubernetes-distribution-you-should-install-on-raspberry-pi-27fa9fe1e658
+Inspiration from: https://medium.com/codex/which-kubernetes-distribution-you-should-install-on-raspberry-pi-27fa9fe1e658
 
-Also: https://ubuntu.com/tutorials/how-to-kubernetes-cluster-on-raspberry-pi#4-installing-microk8s
+With additional ideas from: https://ubuntu.com/tutorials/how-to-kubernetes-cluster-on-raspberry-pi#4-installing-microk8s
 
-K3s is a certified Kubernetes distribution built for IoT & Edge computing. It’s very lightweight and is optimized for ARM, both arm64 and armv7.
+"K3s is a certified Kubernetes distribution built for IoT & Edge computing. It’s very lightweight and is optimized for ARM, both arm64 and armv7.
 
-Note: k3s replaces a few components used by traditional K8s cluster. Particularly, etcd is replaced with sqlite3 for state management and etc. This won’t affect our daily use though.
+Note: k3s replaces a few components used by traditional K8s cluster. Particularly, etcd is replaced with sqlite3 for state management and etc. This won’t affect our daily use though."
 
 ### 1. Install K3s using `curl`:
 
@@ -15,7 +15,7 @@ You might get the following error:
 > Job for k3s.service failed because the control process exited with error code.
 > See "systemctl status k3s.service" and "journalctl -xe" for details.
 
-#### 1.(1) If you got the error, add `cgroup_memory=1 cgroup_enable=memory` at the end of `cmdline.txt`:
+#### If you got the error, add `cgroup_memory=1 cgroup_enable=memory` at the end of `cmdline.txt`:
 
 `sudo nano /boot/cmdline.txt`
 
