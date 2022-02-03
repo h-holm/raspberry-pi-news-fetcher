@@ -14,7 +14,7 @@ K8s CronJob running scripts/run_recipes.sh in the Calibre-compatible Docker cont
 
 #### /scripts
 
-`install.sh` - `rclone´ installation script.
+`install.sh` - `rclone` installation script.
 
 `run_rclonesync.sh` - script for syncing a remote Dropbox folder with a local directory. Perfect for a cronjob.
 
