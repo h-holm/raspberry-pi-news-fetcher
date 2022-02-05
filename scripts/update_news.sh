@@ -1,4 +1,5 @@
 #!/bin/bash
+PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 # Script to move new news epubs to Dropbox folder, and remove old news from the Dropbox folder.
 
 max_num_days=7
