@@ -7,6 +7,7 @@ news_folder="$HOME/devel/rpi-books/fetched-news"
 dropbox_folder="$HOME/dropbox-books-henrik"
 sources=( "The Economist" "Le Monde" "FAZ" "人民日报" )
 
+echo ""
 echo "Considering the following news sources: ${sources[@]}."
 echo "Searching for new news epubs in directory $news_folder, which will also be cleaned."
 echo "News will be moved to directory $dropbox_folder, which will also be cleaned."
