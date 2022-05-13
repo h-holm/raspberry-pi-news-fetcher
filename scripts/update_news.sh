@@ -5,7 +5,8 @@ PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 max_num_days=7
 news_folder="$HOME/devel/rpi-books/fetched-news"
 dropbox_folder="$HOME/dropbox-books-henrik"
-sources=( "The Economist" "Le Monde" "FAZ" "人民日报" )
+#sources=( "The Economist" "Le Monde" "FAZ" "人民日报" )
+sources=("The Economist" "人民日报" "Le Monde" "联合早报网 zaobao.com" "Zeit Online" "Spiegel Online RSS - German alle Themen")
 
 echo ""
 echo "Considering the following news sources: ${sources[@]}."
