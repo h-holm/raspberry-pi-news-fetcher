@@ -1,4 +1,4 @@
-### 1. Use `diskutil list`to identify disk name of Raspberry Pi SD card.
+### 1. Use `diskutil list` to identify disk name of Raspberry Pi SD card.
 
 `diskutil list`
 

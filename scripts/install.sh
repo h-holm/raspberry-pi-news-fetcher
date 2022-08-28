@@ -37,7 +37,7 @@ for tool in ${unzip_tools_list[*]}; do
         unzip_tool="$tool"
         break
     fi
-done  
+done
 set -e
 
 # exit if no unzip tools available
