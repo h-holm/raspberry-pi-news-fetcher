@@ -23,7 +23,7 @@ print_help_message() {
 
 SHORT_OPTS=l:,n:,r:,h
 LONG_OPTS=local-dropbox-dir:,remote-name:,remote-dropbox-dir:,help
-OPTS=$(/usr/local/Cellar/gnu-getopt/2.38.1/bin/getopt --options $SHORT_OPTS --longoptions $LONG_OPTS --name run_rclonesync.sh -- "$@")
+OPTS=$(getopt --options $SHORT_OPTS --longoptions $LONG_OPTS --name run_rclonesync.sh -- "$@")
 
 # Returns the count of arguments that are in short or long options
 VALID_ARGUMENTS=$#
