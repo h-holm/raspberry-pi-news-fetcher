@@ -1,48 +1,44 @@
-### Repo for running Calibre on my Raspberry Pi to fetch news as epubs and sync the fetched news to my Kobo e-reader over Dropbox.
+# rpi-news-fetcher
 
-#### Summary
+Schedule cron jobs to fetch news from news sources specified in `SOURCES` using [Calibre](https://calibre-ebook.com/about). Sync the resulting `epub`s to a Dropbox folder. By having the same Dropbox folder configured on an e-reader device, such as my [Kobo](https://help.kobo.com/hc/en-us/articles/360032442774-Kobo-Libra-H2O), scraped news are automatically synced directly to your hands (and eyes).
 
-- The `ebook-convert` command in the Calibre CLI is used to fetch news.
-- Since Calibre cannot be installed on Raspbian as of writing (2022-02-02) due to dependency issues, Calibre is instead set up on a Docker container.
-- The Docker container is hooked up as a K3s CronJob (K3s is a small K8s install suitable for Raspberry Pis).
-- The K3s CronJob executes the `scripts/run_recipes.sh` script (which runs `ebook-convert` to fetch news) weekly, meaning that news are downloaded and converted to epubs once a week.
-- Two "regular" cronjobs are set up locally on the Raspberry Pi (as opposed to on a K3s cluster):
-- 1. One to manage (a) the `fetched-news` folder where downloaded epubs are stored, and (b) the Dropbox folder which is synced with the cloud. With "managing", I here refer to automatically moving files between the folders as well as deleting files older than > `max_age`.
-- 2. One to run the syncing of the local Dropbox folder with its cloud remote. The utils `rclone` and `rclonesync` are used for this purpose.
-- Currently, four news sources are considered. That said, adding or removing sources is a matter of adding/removing strings from an array.
+## Summary
 
-#### Dockerfile
+- Since newer versions of [Calibre](https://calibre-ebook.com/about) are not compatible with Raspberry Pi OS as of writing (2022-11-03) due to dependency issues, this repo instead installs the [`calibre` command-line interface (CLI)](https://manual.calibre-ebook.com/generated/en/cli-index.html) in a Docker image.
+- The minimal Docker container is run as a Kubernetes `CronJob` on a [K3s](https://k3s.io/) cluster configured on the Raspberry Pi device.
+- The Kubernetes `CronJob` mounts the `./fetched-news` directory and executes the `calibre` CLI `ebook-convert` command to scrape news, outputting resulting `epub`s to the `./fetched-news` directory.
+- Two "regular" cron jobs on the Raspberry Pi manage the following housekeeping tasks:
+    1. Housekeeping the `./fetched-news` directory and the local version of the Dropbox folder to sync with, i.e., copying new news `epub`s from `./fetched-news` to the Dropbox folder and deleting news `epub`s older than `max_num_days`.
+    2. Syncing the local Dropbox folder with its cloud remote using `rclone` and `rclonesync` (for bidirectional syncing so that the deletion of old files from the local Dropbox folder is mirrored on the remote).
 
-A raspberrypi3-debian-based image with `Calibre` installed. As mentioned above, no Raspbian-compatible version of `Calibre` exists as of 2022-02-02. Thus, running `Calibre` on a Docker container on your Raspberry Pi is a convenient workaround.
+## `Dockerfile`
 
-#### fetch-news-k8s-cron-job.yml
+A [`raspberrypi3-debian`](https://hub.docker.com/r/balenalib/raspberrypi3-debian)-based image with the `calibre` command-line tool installed.
 
-K8s CronJob running `scripts/run_recipes.sh` in the Calibre-compatible Docker container every Friday at 6 A.M.
+## `./instructions/`
 
-#### /scripts
+This directory contains instructions outlining the necessary steps to get the setup up and running. It is recommended to go through the instructions in the following order:
+1. `./instructions/1-build-docker-image.md`: building a Docker image with the `calibre` command-line tool installed,
+2. `./instructions/2-install-k3s-on-raspbian.md`: installing `K3s` on Raspberry Pi OS,
+3. `./instructions/3-set-up-rclone.md`: setting up `rclone` and `rclonesync`,
+4. `./instructions/4-set-up-cronjobs.md`: setting up cron jobs,
+5. `./instructions/5-set-up-cronjobs.md`: setting up a Kubernetes `CronJob` on a `K3s` cluster which runs the `./scripts/fetch_news.sh` script inside a Docker container with `Calibre` installed.
 
-`install.sh` - `rclone` installation script.
+## `./scripts/`
 
-`run_rclonesync.sh` - script for syncing a remote Dropbox folder with a local directory. Ideal for running as a cronjob.
+- `./scripts/install.sh`: `rclone` installation script to be executed once.
+- `./scripts/fetch_news.sh`: script to be scheduled as a cron job for running `ebook-convert` to fetch news and store them as `epub`s in the `./fetched-news/` directory.
+- `./scripts/housekeep_news.sh`: script to be scheduled as a cron job for removing old `epub`s from both `./fetched-news/` and the local Dropbox folder, as well as for moving newly fetched news `epub`s from `./fetched-news/` to the local Dropbox folder.
+- `./scripts/run_rclonesync.sh`: script to be scheduled as a cron job for syncing a local Dropbox folder with a remote Dropbox folder.
 
-`run_recipes.sh` - script for running `ebook-convert` to fetch news and store them as epubs in the /fetched-news folder.
+## `fetch_news_k8s_cronjob.yml`
 
-`update_news.sh` - script for automatically removing old epubs from both the `/fetched-news` and the local Dropbox folder, as well as moving newly fetched news epubs from `/fetched-news` to the Dropbox folder.
+Kubernetes `CronJob` running `./scripts/fetch_news.sh` in the `calibre`-compatible Docker container at the scheduled interval.
 
-#### /instructions
+## `./fetched-news/`
 
-This folder contains instruction files for
-- building a Docker image with Calibre installed which can run as a container on your Raspberry Pi;
-- creating a backup image of your Raspberry Pi on MacOS;
-- installing `K3s` on Raspbian;
-- setting up cronjobs on your Raspberry Pi;
-- setting up a K8s CronJob using `K3s` which runs the news-fetching script inside the Docker container with `Calibre` installed;
-- setting up `rclone` and `rclonesync`.
+Fetched news `epub`s show up here.
 
-#### /fetched-news
-
-Fetched news epubs show up here.
-
-#### /logs
+## `./logs/`
 
 Logs show up here.
