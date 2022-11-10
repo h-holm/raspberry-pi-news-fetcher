@@ -1,5 +1,6 @@
 # 2-install-k3s-on-raspberry-pi.md
 ## Why K3s?
+
 From the [k3s docs](https://k3s.io/):
 
 > K3s is a highly available, certified Kubernetes distribution designed for production workloads in unattended, resource-constrained, remote locations or inside IoT appliances.
