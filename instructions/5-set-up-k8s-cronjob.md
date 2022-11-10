@@ -1,37 +1,65 @@
-### 1. Set up K8s CronJob for fetching news.
+# 5-set-up-k8s-cronjob.md
 
-`kubectl create -f fetch-news-k8s-cron-job.yml`
+## Creating the K8s CronJob
 
-That's all you need to do. The rest is optional:
+```shell
+$ kubectl create -f fetch_news_k8s_cronjob.yml
+```
 
-### Get info about the running K8s CronJob. Note that the name 'fetch-news' is given in the yml-file used to create the CronJob.
+That's all you need to do. The rest is optional.
 
-`kubectl get cronjob fetch-news`
+## Getting info about the running K8s CronJob
 
-### Delete the CronJob.
+Note that the name 'fetch-news' is given in the yml-file used to create the CronJob.
 
-`kubectl delete cronjob fetch-news`
+```shell
+$ kubectl get cronjob fetch-news
+```
 
-### If you want to test the CronJob right now without having to reschedule, you can instantiate a Job from the running CronJob:
+## Deleting the CronJob
 
-`kubectl create job name-of-test-job --from=cronjob/fetch-news`
+```shell
+$ kubectl delete cronjob fetch-news
+```
 
-### Get info about the new job.
+## Instantiating a Job from the CronJob on demand
 
-`kubectl get job name-of-test-job`
+If you want to test the CronJob right now without having to reschedule, you can instantiate a Job from the running CronJob with the following command:
 
-### If you wanna check the logs of the running job, first find the name of the pod it's running on.
+```shell
+$ kubectl create job NAME-OF-TEST-JOB --from=cronjob/fetch-news
+```
 
-`kubectl get pods`
+### Getting info about the new Job
 
-Might give you the following:
+```shell
+$ kubectl get job NAME-OF-TEST-JOB
+```
 
-`name-of-test-job--1-7g2fz`
+### Checking the logs of a running Job
 
-### Now to get the logs of the identified pod:
+To see the logs of the running Job, first find the name of the pod it's running on:
 
-`kubectl logs -f -n default name-of-test-job--1-7g2fz`
+```shell
+$ kubectl get pods
+```
 
-### Delete the Job like you delete a CronJob, basically:
+The output might containg something like the following:
 
-`kubectl delete job name-of-test-job--1-7g2fz`
+```shell
+NAME-OF-TEST-JOB--1-7g2fz
+```
+
+Output the logs of the identified pod by running, e.g.:
+
+```shell
+$ kubectl logs -f -n default NAME-OF-TEST-JOB--1-7g2fz
+```
+
+### Deleting the Job
+
+Deleting the Job is identical to deleting a CronJob (or basically any other K8s object):
+
+```shell
+$ kubectl delete job NAME-OF-TEST-JOB--1-7g2fz
+```
