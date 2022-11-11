@@ -1,4 +1,5 @@
-# 2-install-k3s-on-raspberry-pi.md
+# 2-install-k3s.md
+
 ## Why K3s?
 
 From the [k3s docs](https://k3s.io/):
