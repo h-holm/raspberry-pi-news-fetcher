@@ -66,3 +66,28 @@ A single-node cluster should now be set up and running. Verify that it is by run
 ```shell
 $ kubectl get node
 ```
+
+### 5. Prevent `permission denied` error when reading K3s config file on start-up
+
+You might encounter the following error on reboot of your Raspberry Pi:
+
+```shell
+WARN[0000] Unable to read /etc/rancher/k3s/k3s.yaml, please start server with --write-kubeconfig-mode to modify kube config permissions
+error: error loading config file "/etc/rancher/k3s/k3s.yaml": open /etc/rancher/k3s/k3s.yaml: permission denied
+```
+
+This prevents your cluster from running.
+
+An ad-hoc solution is to manually intervene by executing:
+
+```shell
+sudo chmod 644 /etc/rancher/k3s/k3s.yaml
+```
+
+That change will not persist after reboot, however. To prevent the error indefinitely, one solution is to add a `K3S_KUBECNFIG_MODE=\"644\"` line to `/etc/systemd/system/k3s.service.env`. This can be achieved by running:
+
+```shell
+$ echo K3S_KUBECONFIG_MODE=\"644\" >> /etc/systemd/system/k3s.service.env
+```
+
+If the shell complains about write permissions, you might need to add `sudo`. You can of course also `sudo nano` or whatever you prefer to add the `K3S_KUBECNFIG_MODE=\"644\"` line.
