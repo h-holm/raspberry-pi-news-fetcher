@@ -11,51 +11,100 @@ The below steps draw inspiration from:
 
 ## 1. Update your Raspberry Pi
 
+Before installing `rclone`, it's a good idea to run an `apt upgrade`:
+
 ```shell
 $ sudo apt update && sudo apt upgrade
 ```
 
-## 2. Download the `rclone` install script
+## 2. Install `rclone`
 
-Download the `rclone` installation script directly from [rclone.org](https://rclone.org/install.sh) instead of using `apt` (the `rclone` version available on the Raspbian and Raspberry Pi OS repository is usually old):
+Install `rclone` directly from [rclone.org](https://rclone.org/install.sh) instead of using `apt` (the `rclone` version available on the Raspbian and Raspberry Pi OS repositories is usually old):
 
 ```shell
-$ wget https://rclone.org/install.sh -O scripts/rclone_install.sh
+$ sudo -v ; curl https://rclone.org/install.sh | sudo bash
 ```
 
-## 3. Run the install script
+## 3. Configure `rclone`
+
+Different approaches to configuring `rclone` exist. Refer to the [rclone docs](https://rclone.org/dropbox/) for an approach that suits you. To mention some of the options, you can configure `rclone` to access the remote you set up using your personal identity. In the case of Dropbox, you can also set up `rclone` to authenticate over a [Dropbox App](https://rclone.org/dropbox/#get-your-own-dropbox-app-id). Moreover, both headless and headful configuration processes are supported. For a headful approach on your Raspberry Pi, you can for instance look into [VNC Viewer](https://www.realvnc.com/en/connect/download/viewer). Again, I leave this choice up to you. Running the `rclone config` command by itself (i.e., without providing any flags) starts an interactive config process with informative help messages and instructions.
+
+In the following sections, I document the headless set-up process using a Dropbox App that I performed.
+
+### 3.1. Define environment variables
+
+To avoid having to type in the same strings multiple times, set environment variables for:
+
+1. the type of remote you wish to set up,
+2. the name you wish to give the remote,
+3. the "App key" of your Dropbox App (which can be found in the "Settings" pane of your Dropbox App), and
+4. the "App secret" of your Dropbox App (which can be found in the "Settings" pane of your Dropbox App).
+
+For example:
 
 ```shell
-$ sudo bash ./scripts/rclone_install.sh
+$ export REMOTE_TYPE=dropbox
+$ export REMOTE_NAME=my-dropbox
+$ export APP_KEY=hash-copied-from-dropbox-app-settings
+$ export APP_SECRET=hash-copied-from-dropbox-app-settings
 ```
 
-## 4. Configure `rclone`
+### 3.2. Create `rclone` config file
 
-After having been installed, it is time to configure `rclone`. The [above link](https://howchoo.com/pi/how-to-install-dropbox-on-a-raspberry-pi) provides instructions for performing this step on a headless set-up. As I had [VNC Viewer](https://www.realvnc.com/en/connect/download/viewer) installed, however, I used it to get a screen view of my Raspberry Pi for this step. Either way, the config process is straightforward. It is started by running the following command:
+On a headful device (in my case my laptop), run the below `rclone config` command to (1) confirm that the Dropbox App should be given the permissions listed in the web browser window linked to in the output of the `rclone config` command, and (2) create an entry in the `~/.config/rclone/rclone.conf` file for the Dropbox remote.
 
 ```shell
-$ rclone config
+# On my MacBook:
+$ rclone config create $REMOTE_TYPE $REMOTE_NAME --dropbox-client-id $APP_KEY --dropbox-client-secret $APP_SECRET
 ```
 
-## 5. Set environment variables
+Head over to the resulting link to confirm that the Dropbox App is allowed to access your Dropbox.
 
-To avoid having to type in the same string multiple times, set environment variables for the remote you set up, as well as the specific folder on the remote that you wish to sync with, e.g.:
+If the above went smoothly, an entry will have been added to your `~/.config/rclone/rclone.conf` file. Show the config file, locate the entry, and copy it to your clipboard:
 
 ```shell
-$ export REMOTE_NAME=DROPBOX
-$ export REMOTE_FOLDER=NEWS
+# Still on my MacBook:
+$ rclone config show
 ```
 
-## 6. Create a local Dropbox folder
+Copy the relevant entry to your clipboard.
 
-Configure a local directory to use as the local version of your Dropbox folder:
+Now, paste the entry into the `~/.config/rclone/rclone.conf` file *on your Raspberry Pi*:
 
 ```shell
+# On my Raspberry Pi:
+$ nano ~/.config/rclone/rclone.conf
+```
+
+The required entry should now have been added to your Raspberry Pi's `~/.config/rclone/rclone.conf` file.
+
+### 3.3. See whether the remote has been set up
+
+Run the below command to check whether the remote has been added to `rclone`:
+
+```shell
+$ rclone listremotes
+```
+
+## 4. Sync a local folder with the remote Dropbox folder
+
+With `rclone` installed and your remote configured, it is time to connect a local directory to the specific folder on your Dropbox that you wish to sync with.
+
+To avoid having to type in the same strings multiple times, set (or reuse if [already set up](#31-define-environment-variables)) environment variables for:
+
+1. the remote you set up,
+2. the specific folder on the remote that you wish to sync with,
+3. the local directory to use as the local version of your Dropbox folder.
+
+For example:
+
+```shell
+$ export REMOTE_NAME=dropbox
+$ export REMOTE_FOLDER=news
 $ export LOCAL_FOLDER=$HOME/dropbox-news
-$ mkdir $LOCAL_FOLDER
 ```
 
-## 7. Run initial sync of remote and local
+### 4.1. Run initial sync of remote and local
 
 Copy down all the contents of the remote folder to the local folder for an initial setup:
 
@@ -63,7 +112,13 @@ Copy down all the contents of the remote folder to the local folder for an initi
 $ rclone copy $REMOTE_NAME:/$REMOTE_FOLDER $LOCAL_FOLDER
 ```
 
-## 8. Run initial bidirectional sync
+If your `$REMOTE_FOLDER` contained anything, that should now show up in your `$LOCAL_FOLDER`:
+
+```shell
+$ ls $LOCAL_FOLDER
+```
+
+### 4.2. Run initial bidirectional sync
 
 The first time bidirectionally syncing the local and the remote, run `rclone bisync` with the `--resync` flag.
 
@@ -71,7 +126,7 @@ The first time bidirectionally syncing the local and the remote, run `rclone bis
 $ rclone bisync --resync --verbose $LOCAL_FOLDER $REMOTE_NAME:/$REMOTE_FOLDER
 ```
 
-## 9. Leave out `--resync` for successive sync runs
+### 4.3. Leave out `--resync` for successive sync runs
 
 Now, you can run the following command whenever you wish to bidirectionally sync your folders (for instance using a cron job):
 
