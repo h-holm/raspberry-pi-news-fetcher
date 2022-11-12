@@ -10,17 +10,17 @@ $ chmod u+x run_rclone_bisync.sh
 
 ## 2. Set up `rclone bisync` cron job
 
-Set the `scripts/run_rclone_bisync.sh` script to run at regular intervals, ensuring that the local and remote Dropbox folders stay in sync. In my case, I `crontab -e` and set the script to run every fourth hour starting at 00:00:
+Set the [scripts/run_rclone_bisync.sh](../scripts/run_rclone_bisync.sh) script to run at regular intervals, ensuring that the local and remote Dropbox folders stay in sync. In my case, I `crontab -e` and set the script to run every fourth hour starting at 00:00:
 
 ```shell
 $ crontab -e
 ...
-0 0,4,8,12,16,20 * * * /PATH/TO/THIS/REPO/scripts/run_rclone_bisync.sh --local-dropbox-dir /PATH/TO/LOCAL/DROPBOX-DIR --remote-name REMOTE-DROPBOX-NAME --remote-dropbox-dir RMEOTE-DROPBOX-DIR >> /PATH/TO/THIS/REPO//logs/run_rclone_bisync.out 2>&1
+0 0,4,8,12,16,20 * * * /PATH/TO/THIS/REPO/scripts/run_rclone_bisync.sh --local-dropbox-dir /PATH/TO/LOCAL/DROPBOX-DIR --remote-name REMOTE-DROPBOX-NAME --remote-dropbox-dir RMEOTE-DROPBOX-DIR >> /PATH/TO/THIS/REPO/logs/run_rclone_bisync.out 2>&1
 ```
 
 ## 2. Set up 'housekeeping' cron job
 
-Set the `scripts/housekeep_news.sh` script to run at regular intervals, ensuring that (1) fetched news `epub` files are copied from the `fetched-news` directory to the local Dropbox folder, and (2) old scraped `epub` files are removed after exceeding the specified age. In my case, I `crontab -e` and set the script to run every fourth hour starting at 02:00:  
+Set the [scripts/housekeep_news.sh](../scripts/housekeep_news.sh) script to run at regular intervals, ensuring that (1) fetched news `epub` files are copied from the [fetched-news](../fetched-news) directory to the local Dropbox folder, and (2) old scraped `epub` files are removed after exceeding the specified age. In my case, I `crontab -e` and set the script to run every fourth hour starting at 02:00:  
 
 ```shell
 $ crontab -e
