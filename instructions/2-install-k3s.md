@@ -28,7 +28,7 @@ You might get the following error:
 Job for k3s.service failed because the control process exited with error code. See "systemctl status k3s.service" and "journalctl -xe" for details.
 ```
 
-If you did not get the error, proceed to [the next step](#2-reboot). If you did get the error, add `cgroup_memory=1 cgroup_enable=memory` to the `/boot/cmdline.txt` on :
+If you did not get the error, proceed to [the next step](#2-reboot). If you did get the error, add `cgroup_memory=1 cgroup_enable=memory` to the `/boot/cmdline.txt` file on your Raspberry Pi:
 
 ```shell
 $ sudo nano /boot/cmdline.txt
