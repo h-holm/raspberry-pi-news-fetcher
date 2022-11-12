@@ -81,6 +81,6 @@ echo "The local Dropbox directory is set to: '$LOCAL_DROPBOX_DIR'."
 echo "The Dropbox remote is set to: '$REMOTE_NAME'."
 echo "The remote Dropbox directory is set to: '$REMOTE_DROPBOX_DIR'."
 
-echo "Running command 'rclone bisync --verbose $LOCAL_FOLDER $REMOTE_NAME:/$REMOTE_FOLDER':"
-rclone bisync --verbose $LOCAL_FOLDER $REMOTE_NAME:/$REMOTE_FOLDER
+echo "Running command 'rclone bisync --verbose $LOCAL_DROPBOX_DIR $REMOTE_NAME:/$REMOTE_DROPBOX_DIR':"
+rclone bisync --verbose $LOCAL_DROPBOX_DIR $REMOTE_NAME:/$REMOTE_DROPBOX_DIR
 echo "Script <run_rclone_bisync.sh> completed at $(date)."
