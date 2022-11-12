@@ -12,14 +12,20 @@ spec:
       template:
         spec:
           containers:
-            - name: rpi-news-fetcher
+            - name: raspberry-pi-news-fetcher
               image: henholm/raspberrypi3-debian-calibre:latest
-              command: ["/bin/bash", "/app/scripts/fetch_news.sh", "--output-folder", "/app/fetched-news", "--sources-file", "/app/SOURCES", "2>&1", "|", "tee", "-a", "/app/logs/fetch_news.out"]
+              command:
+              - /bin/bash
+              - /app/scripts/fetch_news.sh
+              - --output-dir
+              - /app/fetched-news
+              - --sources-file
+              - /app/SOURCES
               volumeMounts:
-                - name: rpi-news-fetcher
+                - name: raspberry-pi-news-fetcher
                   mountPath: /app
           restartPolicy: OnFailure
           volumes:
-          - name: rpi-news-fetcher
+          - name: raspberry-pi-news-fetcher
             hostPath:
-              path: /home/pi/devel/rpi-news-fetcher
+              path: /home/pi/devel/raspberry-pi-news-fetcher
