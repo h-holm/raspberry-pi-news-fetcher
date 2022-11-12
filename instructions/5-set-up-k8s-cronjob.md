@@ -1,6 +1,6 @@
 # 5-set-up-k8s-cronjob.md
 
-## Creating the K8s CronJob
+## Creating the [K8s CronJob](https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs)
 
 ```shell
 $ kubectl create -f fetch_news_k8s_cronjob.yml
@@ -24,7 +24,7 @@ $ kubectl delete cronjob fetch-news
 
 ## Instantiating a Job from the CronJob on demand
 
-If you want to test the CronJob right now without having to reschedule, you can instantiate a Job from the running CronJob with the following command:
+If you want to test the CronJob right now without having to wait until the next scheduled run or reschedule, you can instantiate a Job from the running CronJob with the following command:
 
 ```shell
 $ kubectl create job NAME-OF-TEST-JOB --from=cronjob/fetch-news
@@ -44,7 +44,7 @@ To see the logs of the running Job, first find the name of the pod it's running 
 $ kubectl get pods
 ```
 
-The output might containg something like the following:
+The output might contain something like the following:
 
 ```shell
 NAME-OF-TEST-JOB--1-7g2fz

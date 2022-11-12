@@ -20,13 +20,13 @@ $ sudo apt update && sudo apt upgrade
 Download the `rclone` installation script directly from [rclone.org](https://rclone.org/install.sh) instead of using `apt` (the `rclone` version available on the Raspbian and Raspberry Pi OS repository is usually old):
 
 ```shell
-$ wget https://rclone.org/install.sh -O scripts/rclone-install.sh
+$ wget https://rclone.org/install.sh -O scripts/rclone_install.sh
 ```
 
 ## 3. Run the install script
 
 ```shell
-$ sudo bash ./scripts/rclone-install.sh
+$ sudo bash ./scripts/rclone_install.sh
 ```
 
 ## 4. Configure `rclone`
@@ -51,7 +51,7 @@ $ export REMOTE_FOLDER=NEWS
 Configure a local directory to use as the local version of your Dropbox folder:
 
 ```shell
-$ export LOCAL_FOLDER=$HOME/dropbox-books-henrik
+$ export LOCAL_FOLDER=$HOME/dropbox-news
 $ mkdir $LOCAL_FOLDER
 ```
 
