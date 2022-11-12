@@ -3,19 +3,19 @@
 ## 1. Ensure the necessary scripts are executable
 
 ```shell
-$ chmod u+x fetch_news.sh
-$ chmod u+x housekeep_news.sh
-$ chmod u+x run_rclone_bisync.sh
+$ chmod u+x scripts/*.sh
 ```
 
 ## 2. Set up `rclone bisync` cron job
 
 Set the [scripts/run_rclone_bisync.sh](../scripts/run_rclone_bisync.sh) script to run at regular intervals, ensuring that the local and remote Dropbox folders stay in sync. In my case, I `crontab -e` and set the script to run every fourth hour starting at 00:00:
 
+rclone bisync --verbose $LOCAL_FOLDER $REMOTE_NAME:/$REMOTE_FOLDER
+
 ```shell
 $ crontab -e
 ...
-0 0,4,8,12,16,20 * * * /PATH/TO/THIS/REPO/scripts/run_rclone_bisync.sh --local-dropbox-dir /PATH/TO/LOCAL/DROPBOX-DIR --remote-name REMOTE-DROPBOX-NAME --remote-dropbox-dir RMEOTE-DROPBOX-DIR >> /PATH/TO/THIS/REPO/logs/run_rclone_bisync.out 2>&1
+0 0,4,8,12,16,20 * * * /PATH/TO/THIS/REPO/scripts/run_rclone_bisync.sh --local-dropbox-dir /PATH/TO/LOCAL/DROPBOX-DIR --remote-name REMOTE-DROPBOX-NAME --remote-dropbox-dir REMOTE-DROPBOX-DIR >> /PATH/TO/THIS/REPO/logs/run_rclone_bisync.out 2>&1
 ```
 
 ## 2. Set up 'housekeeping' cron job
