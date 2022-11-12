@@ -1,5 +1,4 @@
 apiVersion: batch/v1
-# apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
   name: fetch-news
@@ -14,13 +13,8 @@ spec:
           containers:
             - name: raspberry-pi-news-fetcher
               image: henholm/raspberrypi3-debian-calibre:latest
-              command:
-              - /bin/bash
-              - /app/scripts/fetch_news.sh
-              - --output-dir
-              - /app/fetched-news
-              - --sources-file
-              - /app/SOURCES
+              command: ["/bin/bash", "-c"]
+              args: ["/app/scripts/fetch_news.sh --output-dir /app/fetched-news --sources-file /app/SOURCES 2>&1 | tee -a /app/logs/fetch_news.out"]
               volumeMounts:
                 - name: raspberry-pi-news-fetcher
                   mountPath: /app
