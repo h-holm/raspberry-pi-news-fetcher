@@ -12,12 +12,12 @@ spec:
       template:
         spec:
           containers:
-            - name: rpi-books
-              image: henholm/rpi-news-fetcher:latest
-              command: ["/bin/bash", "/rpi-news-fetcher/scripts/fetch_news.sh", "--output-folder", "/rpi-news-fetcher/fetched-news", "--sources-file", "/rpi-news-fetcher/SOURCES", "2>&1", "|", "tee", "-a", "/rpi-news-fetcher/logs/fetch_news.out"]
+            - name: rpi-news-fetcher
+              image: henholm/raspberrypi3-debian-calibre:latest
+              command: ["/bin/bash", "/app/scripts/fetch_news.sh", "--output-folder", "/app/fetched-news", "--sources-file", "/app/SOURCES", "2>&1", "|", "tee", "-a", "/app/logs/fetch_news.out"]
               volumeMounts:
                 - name: rpi-news-fetcher
-                  mountPath: /rpi-news-fetcher
+                  mountPath: /app
           restartPolicy: OnFailure
           volumes:
           - name: rpi-news-fetcher
