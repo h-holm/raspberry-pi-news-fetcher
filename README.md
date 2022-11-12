@@ -35,9 +35,7 @@ This directory contains instructions outlining the necessary steps to get the se
 
 ## The [./scripts](./scripts) directory
 
-This directory contains bash scripts. The bash scripts include an `rclone` installation script, as well as three scripts that we run as cron jobs to regularly execute the tasks of (1) news fetching, (2) housekeeping and (3) cloud storage syncing that we need.
-
-- [./scripts/rclone-install.sh](./scripts/rclone_install.sh): `rclone` installation script to be executed once.
+This directory contains three bash scripts that we run as cron jobs to regularly execute the necessary tasks of (1) news-fetching, (2) housekeeping and (3) cloud storage syncing.
 
 - [./scripts/fetch_news.sh](./scripts/fetch_news.sh): script that runs `ebook-convert` to fetch news and store them as `epub` files in the [./fetched-news](./fetched-news) directory (to be executed by a K8s `CronJob`).
 
