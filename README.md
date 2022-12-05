@@ -8,7 +8,7 @@ The `epub` files output by the `ebook-convert` scraping are synced to a [Dropbox
 
 ## Requirements
 
-A Raspberry Pi device, and, if you want to build and use your own Docker image(s), a [Docker Hub account](https://hub.docker.com/signup) or some other registry you can push Docker images to. Otherwise, feel free to use the [Docker image I build and maintain](https://hub.docker.com/repository/docker/henholm/raspberry-pi-news-fetcher).
+A Raspberry Pi device, and, if you want to build and use your own Docker image(s), a [Docker Hub account](https://hub.docker.com/signup) or some other registry you can push Docker images to. Alternatively, feel free to use the [Docker image I build and maintain](https://hub.docker.com/repository/docker/henholm/raspberry-pi-news-fetcher).
 
 ## Summary
 
