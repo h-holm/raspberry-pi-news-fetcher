@@ -5,6 +5,8 @@
 # exist in the --target-dir), and (2) removing epubs from --from-dir and
 # --target-dir that are older than --max-num-days.
 
+set -e
+
 PROGRAM_NAME="housekeep_news.sh"
 
 function usage {

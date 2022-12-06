@@ -5,6 +5,8 @@
 # the 'rclone' remote specified by the --remote-name flag. Note that the script
 # requires 'rclone' to be installed and configured.
 
+set -e
+
 PROGRAM_NAME="run_rclone_bisync.sh"
 
 function usage {
