@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Script to (1) fetch news from the sources specified line-by-line in the
-# --sources-file input argument by running Calibre's `ebook-convert` CLI
+# --sources-file input argument by running Calibre's 'ebook-convert' CLI
 # command, and (2) output the resulting epub files to the --output-dir.
 
 set -e
@@ -9,7 +9,7 @@ PROGRAM_NAME="fetch_news.sh"
 
 function usage {
   echo "This script scrapes news from the sources listed line-by-line in the"\
-    "file specified by the --sources-file flag by running the `ebook-convert`"\
+    "file specified by the --sources-file flag by running the 'ebook-convert'"\
     "command provided in the Calibre CLI. The script saves the resulting epub"\
     "files to the directory specified by the --output-dir flag."
   echo
