@@ -3,6 +3,8 @@
 # --sources-file input argument by running Calibre's `ebook-convert` CLI
 # command, and (2) output the resulting epub files to the --output-dir.
 
+set -e
+
 PROGRAM_NAME="fetch_news.sh"
 
 function usage {
