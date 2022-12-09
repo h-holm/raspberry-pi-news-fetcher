@@ -111,8 +111,8 @@ echo "Epubs older than $MAX_NUM_DAYS days will be deleted."
 # If needed, you could alternatively use -print0 to handle paths containing spaces.
 to_copy_array=()
 for source in "${SOURCES[@]}"; do
-  find "$TARGET_DIR" -name "*$source*" -mtime +$MAX_NUM_DAYS -type f -print -exec rm -rv "{}" \;
-  find "$FROM_DIR" -name "*$source*" -mtime +$MAX_NUM_DAYS -type f -print -exec rm -rv "{}" \;
+  find "$TARGET_DIR" -name "*$source*" -mtime +$MAX_NUM_DAYS -type f -print -exec rm -rfv "{}" \;
+  find "$FROM_DIR" -name "*$source*" -mtime +$MAX_NUM_DAYS -type f -print -exec rm -rfv "{}" \;
   while IFS=  read -r -d $'\0'; do
     to_copy_array+=("$REPLY")
   done < <(find "$FROM_DIR" -name "*$source*.epub" -type f -print0)
