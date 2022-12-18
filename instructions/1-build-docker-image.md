@@ -20,7 +20,7 @@ where you replace `{USERNAME}`, `{NAME_OF_IMAGE}` and `{TAG}` with whatever you 
 To run an interactive shell on a container created from the image, you can run:
 
 ```shell
-$ docker run -v $(pwd):/app -it {USERNAME}/{NAME_OF_IMAGE}:latest /bin/bash
+$ docker run --platform linux/arm/v7 -v $(pwd):/app -it {USERNAME}/{NAME_OF_IMAGE}:latest /bin/bash
 ```
 
 assuming that the `WORKDIR` of the Docker container is set to `/app`.
