@@ -40,7 +40,8 @@ while [ $# -ge 1 ]; do
       shift 2
       ;;
     -o | --output-dir )
-      OUTPUT_DIR="$2"
+      # Remove trailing slashes.
+      OUTPUT_DIR=$(echo "$2" | sed 's:/*$::')
       shift 2
       ;;
     -h | --help )
