@@ -88,14 +88,28 @@ echo "Scraped epubs will be stored to directory '$OUTPUT_DIR'."
 
 timestamp=$(date +%Y-%m-%d-%H%M)
 
-for recipe in "${SOURCES[@]}"; do
+for src in "${SOURCES[@]}"; do
+  # Decide whether to use a local .recipe file stored under ./recipes/ or a
+  # recipe built-in to / shipped with Calibre.
+  if [ -f "recipes/$src.recipe" ]; then
+    recipe="recipes/$src.recipe"
+  else
+    if ebook-convert --list-recipes |& grep -q "$src"; then
+      recipe="$src.recipe"
+    else
+      echo "No recipe for source \"$src\" was found among Calibre's built-in"\
+        "recipes, nor locally in the ./recipes directory. Skipping $src..."
+      continue
+    fi
+  fi
+
   echo
-  echo "Fetching news from $recipe..."
-  output_name="$recipe-$timestamp.epub"
+  echo "Fetching news from $src..."
+  output_name="$src-$timestamp.epub"
   echo "File output name will be $output_name"
 
-  echo "Using command 'ebook-convert \"$recipe.recipe\" \"$output_name\"'"
-  ebook-convert "$recipe.recipe" "$output_name"
+  echo "Using command 'ebook-convert \"$recipe\" \"$output_name\"'"
+  ebook-convert "$recipe" "$output_name"
 
   sleep 3
 

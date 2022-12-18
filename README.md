@@ -55,6 +55,10 @@ This directory contains three bash scripts that we run as cron jobs to regularly
 
 Kubernetes `CronJob` config for running [./scripts/fetch_news.sh](./scripts/fetch_news.sh) at the scheduled interval in a container based on the `calibre`-compatible Docker image defined in [Dockerfile](Dockerfile).
 
+## [./recipes](./recipes)
+
+If you wish to use local `.recipe` files, they should be put here. The [./scripts/fetch_news.sh](./scripts/fetch_news.sh) checks whether a recipe exists locally. If that is the case, the local recipe takes precedence over Calibre's built-in recipe. If a source specified in the [SOURCES](SOURCES) file exists neither as a local recipe in the [./recipes](./recipes) directory nor among Calibre's built-in recipes, the [./scripts/fetch_news.sh](./scripts/fetch_news.sh) script will skip that source.
+
 ## [./fetched-news](./fetched-news)
 
 Fetched news `epub` files show up here.
