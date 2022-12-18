@@ -1,6 +1,6 @@
 # 3-set-up-rclone.md
 
-This file provides instructions for installing and setting up [`rclone`](https://rclone.org), which can be used to sync a local directory with a remote Dropbox folder (or any other remote cloud storage that `rclone` supports).
+This file provides instructions for installing and setting up [`rclone`](https://rclone.org), which can be used to sync a local directory with a remote Dropbox folder (or any other remote cloud storage supported by `rclone`).
 
 From the [rclone docs](https://rclone.org):
 
@@ -19,7 +19,7 @@ $ sudo apt update && sudo apt upgrade
 
 ## 2. Install `rclone`
 
-Install `rclone` directly from [rclone.org](https://rclone.org/install.sh) instead of using `apt` (the `rclone` version available on the Raspbian and Raspberry Pi OS repositories is usually old):
+Install `rclone` directly from [rclone.org](https://rclone.org/install.sh) instead of using `apt` (the `rclone` version available on the Raspbian and Raspberry Pi OS repositories is not always up to date):
 
 ```shell
 $ sudo -v ; curl https://rclone.org/install.sh | sudo bash
@@ -27,7 +27,7 @@ $ sudo -v ; curl https://rclone.org/install.sh | sudo bash
 
 ## 3. Configure `rclone`
 
-Different approaches to configuring `rclone` exist. Refer to the [rclone docs](https://rclone.org/dropbox/) for an approach that suits you. To mention some of the options, you can configure `rclone` to access the remote you set up using your personal identity. In the case of Dropbox, you can also set up `rclone` to authenticate over a [Dropbox App](https://rclone.org/dropbox/#get-your-own-dropbox-app-id). Moreover, both headless and headful configuration processes are supported. For a headful approach on your Raspberry Pi, you can for instance look into [VNC Viewer](https://www.realvnc.com/en/connect/download/viewer). Again, I leave this choice up to you. Running the `rclone config` command by itself (i.e., without providing any flags) starts an interactive config process with informative help messages and instructions.
+Different approaches to configuring `rclone` exist. Refer to the [rclone docs](https://rclone.org/dropbox) for an approach that suits you. To mention some of the options, you can configure `rclone` to access the remote you set up using your personal identity. In the case of Dropbox, you can also set up `rclone` to authenticate over a [Dropbox App](https://rclone.org/dropbox/#get-your-own-dropbox-app-id). Moreover, both headless and headful configuration processes are supported. For a headful approach on your Raspberry Pi, you can for instance look into [VNC Viewer](https://www.realvnc.com/en/connect/download/viewer). Again, I leave this choice up to you. Running the `rclone config` command by itself (i.e., without providing any flags) starts an interactive config process with informative help messages and instructions.
 
 In the following sections, I document the headless set-up process using a Dropbox App that I performed.
 
@@ -51,7 +51,7 @@ $ export APP_SECRET=hash-copied-from-dropbox-app-settings
 
 ### 3.2. Create `rclone` config file
 
-On a headful device (in my case my laptop), run the below `rclone config` command to (1) confirm that the Dropbox App should be given the permissions listed in the web browser window linked to in the output of the `rclone config` command, and (2) create an entry in the `~/.config/rclone/rclone.conf` file for the Dropbox remote.
+On a headful device (in my case, my laptop), run the below `rclone config` command to (1) confirm that the Dropbox App should be given the permissions listed in the web browser window linked to in the output of the `rclone config` command, and (2) create an entry in the `~/.config/rclone/rclone.conf` file for the Dropbox remote.
 
 ```shell
 # On my MacBook:
@@ -99,7 +99,7 @@ To avoid having to type in the same strings multiple times, set (or reuse if [al
 For example:
 
 ```shell
-$ export REMOTE_NAME=dropbox
+$ export REMOTE_NAME=my-dropbox
 $ export REMOTE_FOLDER=news
 $ export LOCAL_FOLDER=$HOME/dropbox-news
 ```
@@ -112,7 +112,7 @@ Copy down all the contents of the remote folder to the local folder for an initi
 $ rclone copy $REMOTE_NAME:/$REMOTE_FOLDER $LOCAL_FOLDER
 ```
 
-If your `$REMOTE_FOLDER` contained anything, that should now show up in your `$LOCAL_FOLDER`:
+Unless your `$REMOTE_FOLDER` was empty, its contents should now show up in your `$LOCAL_FOLDER`:
 
 ```shell
 $ ls $LOCAL_FOLDER
