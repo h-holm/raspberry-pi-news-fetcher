@@ -108,13 +108,11 @@ for src in "${SOURCES[@]}"; do
   output_name="$src-$timestamp.epub"
   echo "File output name will be $output_name"
 
-  echo "Using command 'ebook-convert \"$recipe\" \"$output_name\"'"
-  ebook-convert "$recipe" "$output_name"
+  echo "Using command 'ebook-convert \"$recipe\" \"$OUTPUT_DIR/$output_name\"'"
+  ebook-convert "$recipe" "$OUTPUT_DIR/$output_name"
 
   sleep 3
-
-  mv "$output_name" "$OUTPUT_DIR/"
-  echo "Moved $output_name to $OUTPUT_DIR"
+  echo "Successfully fetched news from $src!"
 done
 
 echo "Script <$PROGRAM_NAME> completed at $(date)."
