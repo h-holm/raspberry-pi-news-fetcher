@@ -55,7 +55,7 @@ On a headful device (in my case, my laptop), run the below `rclone config` comma
 
 ```shell
 # On my MacBook:
-$ rclone config create $REMOTE_TYPE $REMOTE_NAME --dropbox-client-id $APP_KEY --dropbox-client-secret $APP_SECRET
+$ rclone config create "$REMOTE_NAME" "$REMOTE_TYPE" --dropbox-client-id "$APP_KEY" --dropbox-client-secret "$APP_SECRET"
 ```
 
 Head over to the resulting link to confirm that the Dropbox App is allowed to access your Dropbox.
@@ -109,13 +109,13 @@ $ export LOCAL_FOLDER=$HOME/dropbox-news
 Copy down all the contents of the remote folder to the local folder for an initial setup:
 
 ```shell
-$ rclone copy $REMOTE_NAME:/$REMOTE_FOLDER $LOCAL_FOLDER
+$ rclone copy "$REMOTE_NAME":/"$REMOTE_FOLDER" "$LOCAL_FOLDER"
 ```
 
 Unless your `$REMOTE_FOLDER` was empty, its contents should now show up in your `$LOCAL_FOLDER`:
 
 ```shell
-$ ls $LOCAL_FOLDER
+$ ls "$LOCAL_FOLDER"
 ```
 
 ### 4.2. Run initial bidirectional sync
@@ -123,7 +123,7 @@ $ ls $LOCAL_FOLDER
 The first time bidirectionally syncing the local and the remote, run `rclone bisync` with the `--resync` flag.
 
 ```shell
-$ rclone bisync --resync --verbose $LOCAL_FOLDER $REMOTE_NAME:/$REMOTE_FOLDER
+$ rclone bisync --resync --verbose "$LOCAL_FOLDER" "$REMOTE_NAME":/"$REMOTE_FOLDER"
 ```
 
 ### 4.3. Leave out `--resync` for successive sync runs
@@ -131,5 +131,5 @@ $ rclone bisync --resync --verbose $LOCAL_FOLDER $REMOTE_NAME:/$REMOTE_FOLDER
 Now, you can run the following command whenever you wish to bidirectionally sync your folders (for instance using a cron job):
 
 ```shell
-$ rclone bisync --verbose $LOCAL_FOLDER $REMOTE_NAME:/$REMOTE_FOLDER
+$ rclone bisync --verbose "$LOCAL_FOLDER" "$REMOTE_NAME":/"$REMOTE_FOLDER"
 ```
