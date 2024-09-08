@@ -20,7 +20,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: |
-            ${{ github.event.repository.name }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}
           # Generate image tags based on the following events/attributes:
           tags: |
             type=ref,event=branch
