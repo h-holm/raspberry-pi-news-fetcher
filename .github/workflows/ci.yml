@@ -3,10 +3,12 @@ name: ci
 on:
   push:
     branches:
-      - 'main'
+      - "main"
+    tags:
+      - "v*.*.*"
   pull_request:
     branches:
-      - 'main'
+      - "main"
 
 jobs:
   build-and-push-docker-image:
