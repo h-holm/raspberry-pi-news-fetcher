@@ -10,6 +10,10 @@ on:
     branches:
       - "main"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-and-push-container-image:
     name: Build and Push Container Image
@@ -20,7 +24,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: |
-            ${{ github.event.repository.name }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}
           # Generate image tags based on the following events/attributes:
           tags: |
             type=ref,event=branch
@@ -46,12 +50,13 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and Push Image
-        id: build-and-push-image
+      - name: Build and Maybe Push Image
+        id: build-and-maybe-push-image
         uses: docker/build-push-action@v6
         with:
           # Build on feature branches / PRs, but push only if on the `main` branch.
-          push: ${{ github.ref == 'refs/heads/main' }}
+          # push: ${{ github.ref == 'refs/heads/main' }}
+          push: true
           tags: ${{ steps.generate-metadata.outputs.tags }}
           labels: ${{ steps.generate-metadata.outputs.labels }}
           platforms: linux/arm/v7
