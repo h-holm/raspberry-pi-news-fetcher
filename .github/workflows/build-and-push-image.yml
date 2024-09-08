@@ -46,8 +46,8 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and Push Image
-        id: build-and-push-image
+      - name: Build and Maybe Push Image
+        id: build-and-maybe-push-image
         uses: docker/build-push-action@v6
         with:
           # Build on feature branches / PRs, but push only if on the `main` branch.
