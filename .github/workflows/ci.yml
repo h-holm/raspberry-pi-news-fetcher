@@ -15,8 +15,22 @@ jobs:
     name: Build and Push Container Image
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: Generate Docker Metadata
+        id: generate-metadata
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ github.event.repository.name }}
+          # Generate image tags based on the following events/attributes:
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=sha
+
+      # Add support for more platforms with QEMU.
       - name: Set up QEMU
         id: set-up-qemu
         uses: docker/setup-qemu-action@v3
@@ -38,6 +52,6 @@ jobs:
         with:
           # Build on feature branches / PRs, but push only if on the `main` branch.
           push: ${{ github.ref == 'refs/heads/main' }}
-          tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}:${{ github.sha }}
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}:latest
+          tags: ${{ steps.generate-metadata.outputs.tags }}
+          labels: ${{ steps.generate-metadata.outputs.labels }}
+          platforms: linux/arm/v7
