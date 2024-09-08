@@ -4,7 +4,7 @@
 
 The [Dockerfile](../Dockerfile) in the root of this repo is an example of a Docker image that can run the Calibre `ebook-convert` command that is necessary to scrape news into `epub`s.
 
-In my case, I set up CI using [GitHub Actions](https://docs.github.com/en/actions) to automatically build and push a Docker image from the [Dockerfile](../Dockerfile) on push to or merge into the `main` branch (see the [../.github/workflows/ci.yml](../.github/workflows/ci.yml) file for details).
+In my case, I set up CI using [GitHub Actions](https://docs.github.com/en/actions) to automatically build and push a Docker image from the [Dockerfile](../Dockerfile) on push to or merge into the `main` branch (see the [../.github/workflows/build-and-push-image.yml](../.github/workflows/build-and-push-image.yml) config for details).
 
 To avoid storing the Docker Hub access token generated for the CI in cleartext, I configure [repository secrets](https://docs.github.com/en/actions/security-guides/encrypted-secrets) in the GitHub web UI.
 
