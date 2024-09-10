@@ -6,9 +6,17 @@ on:
       - "main"
     tags:
       - "v*.*.*"
+    paths:
+      # Trigger only on modifications to this workflow or to the Dockerfile.
+      - ".github/workflows/build-and-push-image.yml"
+      - "Dockerfile"
   pull_request:
     branches:
       - "main"
+    paths:
+      # Trigger only on modifications to this workflow or to the Dockerfile.
+      - ".github/workflows/build-and-push-image.yml"
+      - "Dockerfile"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -55,8 +63,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           # Build on feature branches / PRs, but push only if on the `main` branch.
-          # push: ${{ github.ref == 'refs/heads/main' }}
-          push: true
+          push: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref_name, 'refs/tags') }}
           tags: ${{ steps.generate-metadata.outputs.tags }}
           labels: ${{ steps.generate-metadata.outputs.labels }}
           platforms: linux/arm/v7
