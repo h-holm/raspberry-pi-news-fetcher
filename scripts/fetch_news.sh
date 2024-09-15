@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Script to (1) fetch news from the sources specified line-by-line in the
 # --sources-file input argument by running Calibre's 'ebook-convert' CLI
-# command, and (2) output the resulting epub files to the --output-dir.
+# command, and (2) output the resulting EPUB files to the --output-dir.
 
 set -e
 
@@ -10,7 +10,7 @@ PROGRAM_NAME="fetch_news.sh"
 function usage {
   echo "This script scrapes news from the sources listed line-by-line in the"\
     "file specified by the --sources-file flag by running the 'ebook-convert'"\
-    "command provided in the Calibre CLI. The script saves the resulting epub"\
+    "command provided in the Calibre CLI. The script saves the resulting EPUB"\
     "files to the directory specified by the --output-dir flag."
   echo
   echo "Usage: $PROGRAM_NAME [ -s | --sources-file ] [ -o | --output-dir ]"
@@ -85,13 +85,14 @@ fi
 
 echo "Starting script <$PROGRAM_NAME> at $(date)."
 echo "Considering the following news sources: ${SOURCES[@]}."
-echo "Scraped epubs will be stored to directory '$OUTPUT_DIR'."
+echo "Scraped EPUBs will be stored to directory '$OUTPUT_DIR'."
 
 timestamp=$(date +%Y-%m-%d-%H%M)
 
+failures=""
 for src in "${SOURCES[@]}"; do
-  # Decide whether to use a local .recipe file stored under ./recipes/ or a
-  # recipe built-in to / shipped with Calibre.
+  # Decide whether to use a local `.recipe` file stored under `./recipes/` or a recipe
+  # built-in to / shipped with Calibre.
   if [ -f "recipes/$src.recipe" ]; then
     recipe="recipes/$src.recipe"
   else
@@ -105,15 +106,28 @@ for src in "${SOURCES[@]}"; do
   fi
 
   echo
-  echo "Fetching news from $src..."
+  echo "Fetching news from '$src'..."
   output_name="$src-$timestamp.epub"
-  echo "File output name will be $output_name"
+  echo "File output name will be '$output_name'"
 
   echo "Using command 'ebook-convert \"$recipe\" \"$OUTPUT_DIR/$output_name\"'"
-  ebook-convert "$recipe" "$OUTPUT_DIR/$output_name"
+  {  # try
+    ebook-convert "$recipe" "$OUTPUT_DIR/$output_name" &&
+    sleep 3 &&
+    echo "Successfully fetched news from '$src'!"
+  } || {  # catch
+    echo "Fetching of news from '$src' failed!" &&
+    failures+=$'\n'"- $src"
+  }
 
-  sleep 3
-  echo "Successfully fetched news from $src!"
 done
+
+# Log any failures.
+if [ -z "${failures}" ]; then
+  # Strip off leading and trailing whitespace.
+  failures=$(echo "${failures}" | xargs)
+  echo "The following news sources could not be successfully scraped:"
+  echo "${failures}"
+fi
 
 echo "Script <$PROGRAM_NAME> completed at $(date)."
