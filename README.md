@@ -82,6 +82,10 @@ The [./scripts/fetch_news.sh](./scripts/fetch_news.sh) checks whether a recipe e
 */30 * * * * /PATH/TO/REPO/scripts/run_rclone_bisync.sh --local-dropbox-dir /PATH/TO/LOCAL_DROPBOX_DIR --remote-name "REMOTE_NAME" --remote-dropbox-dir "REMOTE_DIR" >> /PATH/TO/REPO/logs/run_rclone_bisync.out 2>&1
 ```
 
-## 4. Scheduling the Scraping Using a Kubernetes (K8s) CronJob
+## 4. Programmatically Sending Scraped News EPUBs as Email Attachments
+
+See [the "News Emailer" repo](https://github.com/h-holm/news-emailer) for a guide on setting up [Mutt](http://www.mutt.org) to programmatically (and recurringly, if need be) send files as attachments.
+
+## 5. Scheduling the Scraping Using a Kubernetes (K8s) CronJob
 
 In the past, I was unable to install Calibre directly on my Raspberry Pi due to it being incompatible with newer versions of Calibre. For this reason, I set up a [K3s](https://k3s.io) cluster on my Raspberry Pi, built a container image with Calibre installed, and configured a [K8s CronJob](https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs) to run the Calibre-based news-scraping workload. See the [`k8s-cronjob` branch](https://github.com/h-holm/raspberry-pi-news-fetcher/tree/k8s-cronjob) for more info.
