@@ -1,0 +1,5 @@
+# Ignore everything ...
+*
+
+# ... except the `fetch-news.sh` script:
+!/scripts/fetch_news.sh
