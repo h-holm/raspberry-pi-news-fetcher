@@ -32,24 +32,30 @@ You might get the following error:
 Job for k3s.service failed because the control process exited with error code. See "systemctl status k3s.service" and "journalctl -xe" for details.
 ```
 
-If you did not get the error, proceed to [the next step](#2-prevent-permission-denied-error-when-reading-k3s-config-file-on-start-up). If you did get the error, add `cgroup_memory=1 cgroup_enable=memory` to the `/boot/cmdline.txt` file on your Raspberry Pi:
+If you did not get the error, proceed to [the next step](#2-prevent-permission-denied-error-when-reading-k3s-config-file-on-start-up). If you did get the error, add `cgroup_memory=1 cgroup_enable=memory` to the `/boot/firmware/cmdline.txt` file on your Raspberry Pi:
 
 ```shell
-$ sudo nano /boot/cmdline.txt
+$ sudo nano /boot/firmware/cmdline.txt
 ```
 
-Note that `/boot/cmdline.txt` is a single-line file, meaning that you **must not** add a new line to the file when adding `cgroup_memory=1 cgroup_enable=memory` to the config.
+Note that `/boot/firmware/cmdline.txt` is a single-line file, meaning that you **must not** add a new line to the file when adding `cgroup_memory=1 cgroup_enable=memory` to the config.
 
-The following is what the `/boot/cmdline.txt` file looked like on my Raspberry Pi *before* adding `cgroup_enable=memory cgroup_memory=1`:
+The following is what the `/boot/firmware/cmdline.txt` file looked like on my Raspberry Pi *before* adding `cgroup_enable=memory cgroup_memory=1`:
 
-```shell
-console=serial0,115200 console=tty1 root=PARTUUID=ff993489-02 rootfstype=ext4 fsck.repair=yes rootwait quiet splash plymouth.ignore-serial-consoles
+```text
+console=serial0,115200 console=tty1 root=PARTUUID=e44d0680-02 rootfstype=ext4 fsck.repair=yes rootwait quiet splash plymouth.ignore-serial-consoles cfg80211.ieee80211_regdom=SE
 ```
 
 The following is what it looked like *after* the modification:
 
+```text
+cgroup_enable=memory cgroup_memory=1 console=serial0,115200 console=tty1 root=PARTUUID=e44d0680-02 rootfstype=ext4 fsck.repair=yes rootwait quiet splash plymouth.ignore-serial-consoles cfg80211.ieee80211_regdom=SE
+```
+
+After updating the `/boot/firmware/cmdline.txt` file, reboot the Raspberry Pi:
+
 ```shell
-cgroup_enable=memory cgroup_memory=1 console=serial0,115200 console=tty1 root=PARTUUID=ff993489-02 rootfstype=ext4 fsck.repair=yes rootwait quiet splash plymouth.ignore-serial-consoles
+$ sudo reboot
 ```
 
 ### 2. Prevent `permission denied` Error When Reading K3s Config File on Start-Up
