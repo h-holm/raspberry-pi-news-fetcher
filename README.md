@@ -74,7 +74,12 @@ The [./scripts/fetch_news.sh](./scripts/fetch_news.sh) checks whether a recipe e
 ## 3. Example Crontab
 
 ```text
-
+# Run the Calibre news scraping every Friday at 09:00.
+0 9 * * 5 /PATH/TO/REPO/fetch_news.sh --sources-file /PATH/TO/REPO/SOURCES --output-dir /PATH/TO/FETCHED-NEWS >> /PATH/TO/REPO/logs/fetch_news.out 2>&1
+# Run the housekeeping every 30 minutes.
+*/30 * * * * /PATH/TO/REPO/scripts/housekeep_news.sh --sources-file /PATH/TO/REPO/SOURCES --from-dir /PATH/TO/FETCHED-NEWS --target-dir /PATH/TO/LOCAL_DROPBOX_DIR --max-num-days 6 >> /PATH/TO/REPO/logs/housekeep_news.out 2>&1
+# Run the `rclone` syncing every 30 minutes.
+*/30 * * * * /PATH/TO/REPO/scripts/run_rclone_bisync.sh --local-dropbox-dir /PATH/TO/LOCAL_DROPBOX_DIR --remote-name "REMOTE_NAME" --remote-dropbox-dir "REMOTE_DIR" >> /PATH/TO/REPO/logs/run_rclone_bisync.out 2>&1
 ```
 
 ## 4. Scheduling the Scraping Using a Kubernetes (K8s) CronJob
