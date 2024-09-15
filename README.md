@@ -61,8 +61,6 @@ chmod u+x scripts/*.sh
 .
 ├── README.md
 ├── SOURCES                   # A line-by-line text file of news sources to scrape.
-├── fetched-news              # By default, fetched news EPUBs show up here.
-├── logs                      # By default, logs show up here.
 ├── rclone-setup.md           # Guide on configuring `rclone` to sync a local directory with a remote Dropbox folder.
 ├── recipes                   # If you wish to use local Calibre `.recipe` files, they should be put here.
 └── scripts
