@@ -7,6 +7,11 @@ set -e
 
 PROGRAM_NAME="fetch_news.sh"
 
+# Set the default path to the directory of local recipe files (if any).
+parent_dir="$(dirname "$(realpath "$0")")"
+grandparent_dir="$(dirname "$parent_dir")"
+RECIPES_DIR="${grandparent_dir}/recipes"
+
 function usage {
   echo "This script scrapes news from the sources listed line-by-line in the" \
     '`--sources-file` file by running the `ebook-convert` command of the Calibre' \
@@ -15,11 +20,21 @@ function usage {
   echo "Usage: $PROGRAM_NAME [ -s | --sources-file ] [ -o | --output-dir ]"
   echo "  -s | --sources-file   Path to line-by-line listing of Calibre news sources."
   echo "  -o | --output-dir     Path to output directory."
+  echo '  -r | --recipes-dir    Path to directory of local `.recipe` files to use.' \
+    'For a given news source (e.g., "The Economist"), if the `--recipes-dir` contains' \
+    'a valid `.recipe` file ("The Economist.recipe"), the local `.recipe` file takes' \
+    'precedence over the corresponding built-in Calibre recipe (if any). Defaults to:' \
+    "'${RECIPES_DIR}'."
   echo "  -h | --help           Display this help message."
 }
 
-SHORT_OPTS=s:,o:,h
-LONG_OPTS=sources-file:,output-dir:,help
+function error {
+  # Print an error message to stderr without exiting the script.
+  echo "Error: $@" >&2
+}
+
+SHORT_OPTS=s:,o:,r:,h
+LONG_OPTS=sources-file:,output-dir:,recipes-dir:,help
 OPTS=$(getopt --options $SHORT_OPTS --longoptions $LONG_OPTS --name $PROGRAM_NAME -- "$@")
 
 # Returns the count of provided args that are in the short or long options.
@@ -41,6 +56,17 @@ while [ $# -ge 1 ]; do
     -o | --output-dir )
       # Remove trailing slashes.
       OUTPUT_DIR=$(echo "$2" | sed 's:/*$::')
+      shift 2
+      ;;
+    -r | --recipes-dir )
+      # If the `--recipes-dir` argument is specified, set the `RECIPES_DIR` variable to
+      # the provided value. Otherwise, keep the default value.
+      RECIPES_DIR=$(echo "$2" | sed 's:/*$::')
+      if [ ! -d "${RECIPES_DIR}" ]; then
+        echo 'The provided `--recipes-dir` is not the path to a valid directory:' \
+          "'${RECIPES_DIR}' Exiting..."
+        exit 2
+      fi
       shift 2
       ;;
     -h | --help )
@@ -85,26 +111,41 @@ fi
 echo "Starting script <$PROGRAM_NAME> at $(date)."
 echo "Considering the following news sources: ${SOURCES[@]}."
 echo "Scraped EPUBs will be stored to directory: '${OUTPUT_DIR}'."
+echo "The (local) recipes directory is set to: '${RECIPES_DIR}'."
 
 timestamp=$(date +%Y-%m-%d-%H%M)
 
 failures=""
 for SRC in "${SOURCES[@]}"; do
-  # Decide whether to use a local `.recipe` file stored under `./recipes/` or a recipe
-  # built-in to / shipped with Calibre.
-  if [ -f "recipes/${SRC}.recipe" ]; then
-    recipe="recipes/${SRC}.recipe"
+  echo
+
+  # Decide whether to use (1) a local `.recipe` file stored under the `RECIPES_DIR`
+  # directory or (2) a recipe built-in to / shipped with Calibre.
+  local_recipe_file="${RECIPES_DIR}/${SRC}.recipe"
+  echo "Checking whether a local recipe file exists at: '${local_recipe_file}'..."
+  if [ -f "${local_recipe_file}" ]; then
+    # If a local recipe file exists, use it.
+    recipe="${RECIPES_DIR}/${SRC}.recipe"
+    echo "Using local recipe file: '${recipe}'"
   else
-    if ebook-convert --list-recipes |& grep -q "${SRC}"; then
+    # Check if Calibre ships a built-in recipe for source "${SRC}". Note that the
+    # `--list-recipes` command lists all available recipes, meaning that multiple lines
+    # may match "${SRC}". To ensure a verbatim match, first strip off leading and
+    # trailing whitespace from the output of the `ebook-convert` command. Then
+    echo "Checking whether a Calibre built-in recipe exists for source '${SRC}'..."
+    if ebook-convert --list-recipes |& awk '{$1=$1;print}' | grep --line-regexp --quiet "${SRC}"; then
+      # If a built-in recipe exists, use it.
       recipe="${SRC}.recipe"
+      echo "Using Calibre built-in recipe: '${recipe}'"
     else
-      echo "No recipe for source '${SRC}' was found among Calibre's built-in" \
-        "recipes, nor locally in the \`./recipes\` directory. Skipping '${SRC}'..."
+      # If the recipe name is not found, skip to the next source.
+      error "A recipe for source '${SRC}' was found neither among Calibre's built-in" \
+        "recipes nor locally in the '${RECIPES_DIR}' directory. Skipping '${SRC}'..."
+      failures+=$'\n'"- ${SRC}"
       continue
     fi
   fi
 
-  echo
   echo "Fetching news from '${SRC}'..."
   output_name="${SRC}-$timestamp.epub"
   echo "File output name set to: '${output_name}'"
@@ -122,7 +163,7 @@ for SRC in "${SOURCES[@]}"; do
 done
 
 # Log any failures.
-if [ -z "${failures}" ]; then
+if [ "${failures}" ]; then
   # Strip off leading and trailing whitespace.
   failures=$(echo "${failures}" | xargs)
   echo "The following news sources could not be successfully scraped:"
