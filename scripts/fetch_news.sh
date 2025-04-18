@@ -122,7 +122,7 @@ for SRC in "${SOURCES[@]}"; do
 done
 
 # Log any failures.
-if [ -z "${failures}" ]; then
+if [ "${failures}" ]; then
   # Strip off leading and trailing whitespace.
   failures=$(echo "${failures}" | xargs)
   echo "The following news sources could not be successfully scraped:"
