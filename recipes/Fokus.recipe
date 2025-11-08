@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 # vim:fileencoding=utf-8
-from datetime import datetime, timedelta, timezone
+from datetime import datetime
 
-from calibre.ebooks.BeautifulSoup import BeautifulSoup
 from calibre.web.feeds.news import BasicNewsRecipe
 
 
@@ -54,18 +53,21 @@ class Fokus(BasicNewsRecipe):
         figure_tag = a_tag.find('figure')
         img_tag = figure_tag.find('img')
 
-        # The `srcset` attribute contains a comma-separated list of URLs and their resolutions.
-        cover_urls = img_tag['srcset'].split(', ')
-        cover_urls = [src.split(' ') for src in cover_urls]
+        try:
+            # The `srcset` attribute contains a comma-separated list of URLs and their resolutions.
+            cover_urls = img_tag['srcset'].split(', ')
+            cover_urls = [src.split(' ') for src in cover_urls]
 
-        # The second item of each tuple should be the resolution, e.g., '578w' or '821w'. Remove the 'w' suffix, cast
-        # to an integer and sort in descending order.
-        cover_urls = [(url, int(resolution[:-1])) for url, resolution in cover_urls]
-        cover_urls = sorted(cover_urls, key=lambda x: x[1], reverse=True)
+            # The second item of each tuple should be the resolution, e.g., '578w' or '821w'. Remove the 'w' suffix, cast
+            # to an integer and sort in descending order.
+            cover_urls = [(url, int(resolution[:-1])) for url, resolution in cover_urls]
+            cover_urls = sorted(cover_urls, key=lambda x: x[1], reverse=True)
 
-        # The first item of the sorted list is now the URL of the highest-resolution image.
-        self.cover_url = cover_urls[0][0]
-        self.log(f"Identified cover URL: '{self.cover_url}'")
+            # The first item of the sorted list is now the URL of the highest-resolution image.
+            self.cover_url = cover_urls[0][0]
+            self.log(f"Identified cover URL: '{self.cover_url}'")
+        except (KeyError, ValueError) as exc:
+            self.log.error(f'Failed to extract cover URL! Has the website format changed?\n{exc}')
 
         return
 
@@ -73,7 +75,7 @@ class Fokus(BasicNewsRecipe):
         '''Return the URL of the current (weekly) edition of Fokus.'''
         current_year = datetime.now().year
         try:
-            soup = self.index_to_soup(f"{self.main_url}/vara-utgavor")
+            soup = self.index_to_soup(f'{self.main_url}/vara-utgavor')
 
             # Identify all <a> tags of class 'Issue' that have an href attribute containing the current year.
             a_tags = soup.find_all('a', class_='Issue', href=True)
@@ -106,7 +108,7 @@ class Fokus(BasicNewsRecipe):
             current_edition_a_tag = soup.find('a', class_='Issue', href=current_edition_url)
             self.extract_cover_url(current_edition_a_tag)
         except Exception as exc:
-            self.log.error(f"Failed to identify the current edition URL: {e}")
+            self.log.error(f'Failed to identify the current edition URL: {exc}')
             raise NoArticles(
                 f"Could not find the URL of the current edition. Either the '{self.main_url}' server is experiencing "
                 'issues, in which case you should try again later, or the website format has changed and the recipe '
@@ -172,7 +174,7 @@ class Fokus(BasicNewsRecipe):
             self.log.debug(log_message)
 
         # Identify all <article> tags of class 'Blurb' that have an href attribute.
-        self.log(f'Identifying all articles...')
+        self.log('Identifying all articles...')
         try:
             article_blurbs = soup.find_all('article', {'class': 'Blurb'})
         except AttributeError:
