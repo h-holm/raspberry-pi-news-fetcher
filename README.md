@@ -23,20 +23,20 @@ My 8GB Raspberry Pi 4 Model B has the following specs and package versions:
 
 ```shell
 $ uname -a
-Linux raspberrypi 6.6.31+rpt-rpi-v8 #1 SMP PREEMPT Debian 1:6.6.31-1+rpt1 (2024-05-29) aarch64 GNU/Linux
+Linux raspberrypi 6.12.47+rpt-rpi-v8 #1 SMP PREEMPT Debian 1:6.12.47-1+rpt1 (2025-09-16) aarch64 GNU/Linux
 $ calibre --version
-calibre (calibre 6.13)
+calibre (calibre 8.5)
 $ rclone --version
-rclone v1.68.0
-- os/version: raspbian 12.7 (64 bit)
-- os/kernel: 6.6.31+rpt-rpi-v8 (aarch64)
+rclone v1.71.2
+- os/version: raspbian 13.1 (64 bit)
+- os/kernel: 6.12.47+rpt-rpi-v8 (aarch64)
 - os/type: linux
 - os/arch: arm64 (ARMv8 compatible)
-- go/version: go1.23.1
+- go/version: go1.25.3
 - go/linking: static
 - go/tags: none
 $ bash --version
-GNU bash, version 5.2.15(1)-release (aarch64-unknown-linux-gnu)
+GNU bash, version 5.2.37(1)-release (aarch64-unknown-linux-gnu)
 ```
 
 ### 1.1 Calibre Set-Up
