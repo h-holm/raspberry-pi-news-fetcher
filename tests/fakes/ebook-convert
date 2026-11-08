@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# Fake `ebook-convert` for tests. Built-in recipe titles come from
+# $FAKE_BUILTIN_RECIPES (newline-separated). Any recipe whose name contains "Fail"
+# fails, and one containing "Hang" sleeps. Every conversion is logged to $FAKE_CALLS.
+if [[ $1 == --list-recipes ]]; then
+  echo "Available recipes:"
+  while IFS= read -r r; do [[ -n $r ]] && printf '\t%s\n' "$r"; done <<<"${FAKE_BUILTIN_RECIPES:-}"
+  exit 0
+fi
+printf '%s\n' "$1" >>"$FAKE_CALLS"
+case $1 in
+  *Fail*) echo "Traceback: HTTP Error 403: Forbidden" >&2; exit 1 ;;
+  *Hang*) sleep 30 ;;
+esac
+echo "fake epub for $1" >"$2"

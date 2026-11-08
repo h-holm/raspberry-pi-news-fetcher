@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# Fake `rclone` for tests. A remote "name:/dir" maps to $FAKE_REMOTE_ROOT/dir.
+# Supports `lsf`, `touch` and `bisync`. $FAKE_BISYNC_MODE picks bisync's behaviour:
+# ok (default), needs-resync (fails unless --resync-mode is given), fail.
+# Every bisync call's arguments are logged to $FAKE_CALLS.
+to_path() { local p=${1#*:}; printf '%s' "$FAKE_REMOTE_ROOT/${p#/}"; }
+cmd=$1
+shift
+args=()
+for a in "$@"; do [[ $a == -- || $a == --max-depth || $a == 1 ]] || args+=("$a"); done
+case $cmd in
+  lsf) ls -1A "$(to_path "${args[0]}")" ;;
+  touch) touch "$(to_path "${args[0]}")" ;;
+  bisync)
+    echo "bisync $*" >>"$FAKE_CALLS"
+    case ${FAKE_BISYNC_MODE:-ok} in
+      ok) echo "INFO  : Bisync successful" ;;
+      needs-resync)
+        if [[ " $* " == *" --resync-mode "* ]]; then echo "INFO  : Bisync successful"; exit 0; fi
+        echo "ERROR : Bisync critical error: cannot find prior Path1 or Path2 listings"
+        echo "ERROR : Bisync aborted. Must run --resync to recover."
+        exit 2 ;;
+      fail) echo "ERROR : Bisync aborted. Error is retryable without --resync due to --resilient mode."; exit 1 ;;
+    esac ;;
+  *) echo "fake rclone: unsupported command $cmd" >&2; exit 99 ;;
+esac
