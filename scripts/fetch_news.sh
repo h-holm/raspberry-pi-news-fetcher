@@ -99,7 +99,9 @@ for src in "${SOURCES[@]}"; do
 
   name="$src-$timestamp.epub"
   run_log="$LOG_DIR/fetch/$timestamp-$src.log"
-  partial=$(mktemp --tmpdir="$OUTPUT_DIR/.partial" --suffix=.epub fetch.XXXXXX)
+  # Only reserve a unique name (-u): ebook-convert creates the file itself, so it gets
+  # normal umask permissions instead of mktemp's private 0600.
+  partial=$(mktemp -u --tmpdir="$OUTPUT_DIR/.partial" --suffix=.epub fetch.XXXXXX)
   log "Fetching '$src' with $kind recipe '$recipe'..."
   start=$SECONDS
 

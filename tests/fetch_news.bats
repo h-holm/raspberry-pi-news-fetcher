@@ -70,6 +70,15 @@ fetch() {
   ls "$WORK/fetched"/NZZ-*.epub
 }
 
+@test "EPUBs get normal umask permissions" {
+  printf 'NZZ\n' >"$WORK/sources"
+  export FAKE_BUILTIN_RECIPES="NZZ"
+  umask 0002
+  run fetch
+  [ "$status" -eq 0 ]
+  [ "$(stat -c %a "$WORK/fetched"/NZZ-*.epub)" = "664" ]
+}
+
 @test "usage errors exit 2" {
   run "$SCRIPTS/fetch_news.sh"
   [ "$status" -eq 2 ]
