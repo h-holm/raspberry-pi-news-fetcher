@@ -11,7 +11,7 @@ PROGRAM_NAME="fetch_news.sh"
 source "$(dirname "$(realpath "$0")")/lib/common.sh"
 
 RECIPES_DIR="$REPO_DIR/recipes"
-TIMEOUT="30m"
+TIMEOUT="10m"
 : "${PAUSE_SECONDS:=3}"
 SOURCES_FILE=""
 OUTPUT_DIR=""

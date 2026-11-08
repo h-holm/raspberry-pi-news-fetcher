@@ -112,7 +112,7 @@ Create `scripts/lib/common.sh`, sourced by every script, containing:
 - Write each EPUB to `${OUTPUT_DIR}/.partial/<name>.epub`, then `mv` it into place (atomic, so housekeeping and news-emailer never see partial files).
 - Print failures as a proper multi-line list.
 - **Tolerate partial failures:** keep going after a failing source and exit 0 if at least one source succeeded. Exit non-zero only if *every* source failed, or on a setup error (missing `ebook-convert`, bad args). Write failed sources to `logs/last_fetch_failures.txt` and hand them to `notify.sh` (Phase 6). Housekeeping, bisync and news-emailer run on their own crons, so each delivers whatever was fetched.
-- Optional `--timeout` per source (`timeout 20m ebook-convert …`) so one hung site can't stall the run.
+- `--timeout` per source, **default 10m** (decided 2026-11-08: 30m was too long; the slowest source observed takes ~2 min), so one hung site can't stall the run.
 
 `housekeep_news.sh`:
 - Wrap the run in `with_lock`.
