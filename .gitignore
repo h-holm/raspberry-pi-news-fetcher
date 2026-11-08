@@ -1,0 +1,22 @@
+# OS / editor cruft
+.DS_Store
+
+# Runtime output (lives on the Pi only)
+/logs/
+/fetched-news/
+*.epub
+
+# Local, per-machine configuration: only the *.example templates are tracked.
+/config/*
+!/config/*.example
+!/config/readers/
+/config/readers/*
+!/config/readers/*.example
+
+# Legacy untracked per-reader source lists on the Pi (migrated into config/).
+/*-SOURCES
+/SINGLE-SOURCE
+
+# Local scratch copies that must never be published.
+rpi-bash_history
+/rrecipes/
