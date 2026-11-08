@@ -126,18 +126,14 @@ Unless your `$REMOTE_FOLDER` was empty, its contents should now show up in your 
 ls "$LOCAL_FOLDER"
 ```
 
-### 3.7 Run Initial Bidirectional Sync
+### 3.7 Run the Initial Bidirectional Sync
 
-The first time bidirectionally syncing the local and the remote, run `rclone bisync` with the `--resync` flag.
-
-```shell
-rclone bisync --resync --verbose "$LOCAL_FOLDER" "$REMOTE_NAME":/"$REMOTE_FOLDER"
-```
-
-### 3.8 Leave Out `--resync` for Successive Sync Runs
-
-Now, you can run the following command whenever you wish to bidirectionally sync your folders (for instance using a cron job):
+Let the repo's script do the first sync. `--init` creates an `RCLONE_TEST` sentinel file on both sides and runs the initial `--resync-mode newer`, which only copies and never deletes:
 
 ```shell
-rclone bisync --verbose "$LOCAL_FOLDER" "$REMOTE_NAME":/"$REMOTE_FOLDER"
+scripts/run_rclone_bisync.sh --init --local-dropbox-dir "$LOCAL_FOLDER" --remote-name "$REMOTE_NAME" --remote-dropbox-dir "$REMOTE_FOLDER"
 ```
+
+### 3.8 Successive Sync Runs
+
+After that, cron runs the same script without `--init` (via `scripts/run_reader.sh`, see [crontab.example](crontab.example)). Each run uses `--check-access`, so the sentinel files must stay in place. They stop a briefly empty folder from aborting bisync, and they let the script tell a deliberate wipe from a normal weekly rotation. The script also retries a resync automatically when bisync asks for one. See the "Sync robustness" section of the [README](README.md).

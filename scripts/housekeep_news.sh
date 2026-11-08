@@ -1,129 +1,116 @@
 #!/usr/bin/env bash
-# This script housekeeps news EPUBs stemming from the sources listed in the
-# `--sources-file` by:
-#   1. moving new EPUBs from the `--from-dir` to the `--target-dir` ("new" meaning
-#      EPUBs that do not already exist in the --target-dir),
-#   2. removing EPUBs from `--from-dir` and `--target-dir` that are older than
-#      `--max-num-days`.
-
-set -e
+# Delivers fetched news EPUBs to one reader's local Dropbox folder and cleans up:
+#   1. deletes EPUBs older than --max-num-days from --from-dir (the fetcher's
+#      output dir; every EPUB there is fetcher-owned, whatever its source),
+#   2. deletes fetched EPUBs older than --max-num-days from --target-dir. Only files
+#      named like the fetcher's output ("<Source>-YYYY-MM-DD-HHMM.epub") are ever
+#      deleted there, because readers keep their own books in the same folder,
+#   3. copies EPUBs of the sources in --sources-file from --from-dir to --target-dir,
+#      once per file. A ledger in $STATE_DIR records what was delivered, so an issue
+#      the reader deleted (e.g. from Dropbox) is not copied back again.
 
 PROGRAM_NAME="housekeep_news.sh"
+# shellcheck source=lib/common.sh
+source "$(dirname "$(realpath "$0")")/lib/common.sh"
 
-function usage {
-  echo "This script housekeeps news EPUBs stemming from the sources listed in the" \
-    '`--sources-file` by:'
-  echo '  1. moving new EPUBs from the `--from-dir` to the `--target-dir` ("new"' \
-    'meaning EPUBs that do not already exist in the `--target-dir`),'
-  echo '  2. removing EPUBs from `--from-dir` and `--target-dir` that are older than' \
-    '`--max-num-days`.'
-  echo ""
-  echo "Usage: $PROGRAM_NAME [ -s | --sources-file ] [ -f | --from-dir ]"\
-    "[ -t | --target-dir ] [ -m | --max-num-days ]"
-  echo "  -s | --sources-file   Path to line-by-line file of news sources."
-  echo "  -f | --from-dir       Path to directory to move EPUBs from."
-  echo "  -t | --target-dir     Path to directory to move EPUBs to."
-  echo "  -m | --max-num-days   Age in number of days after which an EPUB is deleted."
-  echo "  -h | --help           Display this help message."
+SOURCES_FILE=""
+FROM_DIR=""
+TARGET_DIR=""
+MAX_NUM_DAYS=""
+
+usage() {
+  cat <<EOF
+Delivers fetched news EPUBs to a reader's folder and deletes old ones.
+
+Usage: $PROGRAM_NAME -s SOURCES_FILE -f FROM_DIR -t TARGET_DIR -m MAX_NUM_DAYS [-v]
+  -s | --sources-file   Line-by-line list of the reader's news sources.
+  -f | --from-dir       Directory the fetcher writes EPUBs to.
+  -t | --target-dir     The reader's local (Dropbox-synced) directory.
+  -m | --max-num-days   Delete fetched EPUBs older than this (as \`find -mtime +N\`).
+  -v | --verbose        Also log when nothing changed.
+  -h | --help           Show this help.
+
+Only files named "<Source>-YYYY-MM-DD-HHMM.epub" are ever deleted from TARGET_DIR.
+EOF
 }
 
-SHORT_OPTS=s:,f:,t:,m:,h
-LONG_OPTS=sources-file:,from-dir:,target-dir:,max-num-days:,help
-OPTS=$(getopt --options $SHORT_OPTS --longoptions $LONG_OPTS --name $PROGRAM_NAME -- "$@")
-
-# Returns the count of provided args that are in the short or long options.
-VALID_ARGUMENTS=$#
-
-if [ "$VALID_ARGUMENTS" -eq 0 ]; then
+(($# > 0)) || {
   usage
   exit 2
-fi
-
+}
+OPTS=$(getopt -o s:f:t:m:vh -l sources-file:,from-dir:,target-dir:,max-num-days:,verbose,help \
+  -n "$PROGRAM_NAME" -- "$@") || {
+  usage >&2
+  exit 2
+}
 eval set -- "$OPTS"
-
-while [ $# -ge 1 ]; do
+while true; do
   case "$1" in
-    -s | --sources-file )
-      SOURCES_FILE="$2"
-      shift 2
-      ;;
-    -f | --from-dir )
-      FROM_DIR="$2"
-      shift 2
-      ;;
-    -t | --target-dir )
-      TARGET_DIR="$2"
-      shift 2
-      ;;
-    -m | --max-num-days )
-      MAX_NUM_DAYS="$2"
-      shift 2
-      ;;
-    -h | --help )
-      usage
-      exit 2
-      ;;
-    --)
-      # No more options left.
-      shift;
-      break
-      ;;
-    *)
-      echo "Unexpected option: $1"
-      usage
-      exit 2
-      ;;
+    -s | --sources-file) SOURCES_FILE=$2; shift 2 ;;
+    -f | --from-dir) FROM_DIR=$(strip_trailing_slashes "$2"); shift 2 ;;
+    -t | --target-dir) TARGET_DIR=$(strip_trailing_slashes "$2"); shift 2 ;;
+    -m | --max-num-days) MAX_NUM_DAYS=$2; shift 2 ;;
+    -v | --verbose) VERBOSE=1; shift ;;
+    -h | --help) usage; exit 0 ;;
+    --) shift; break ;;
   esac
 done
 
-if [ ! -f "${SOURCES_FILE}" ]; then
-  echo 'No file found at value specified by `--sources-file`. Please provide the path'\
-    'to an existing file. Exiting...'
-  exit 2
-else
-  readarray -t SOURCES < "${SOURCES_FILE}"
-  if [ ${#SOURCES[@]} -eq 0 ]; then
-    echo 'The provided `--sources-file` is empty. Please specify the path to a file'\
-      'listing valid Calibre news sources line by line. Exiting...'
-    exit 2
-  fi
-fi
-if [ ! -d "${FROM_DIR}" ]; then
-  echo 'No directory found at value specified by `--from-dir`. Please provide the'\
-    'path to an existing directory. Exiting...'
-  exit 2
-fi
-if [ ! -d "${TARGET_DIR}" ]; then
-  echo 'No directory found at value specified by `--target-dir`. Please provide the'\
-  'path to an existing directory. Exiting...'
-  exit 2
-fi
-if [ ! "$MAX_NUM_DAYS" -gt 0 ]; then
-  echo "$MAX_NUM_DAYS is not a valid \`--max-num-days\` value. Please provide an"\
-    "integer greater than 0. Exiting..."
-  exit 2
+SOURCES=()
+read_sources "$SOURCES_FILE" SOURCES
+require_dir --from-dir "$FROM_DIR"
+require_dir --target-dir "$TARGET_DIR"
+[[ $MAX_NUM_DAYS =~ ^[1-9][0-9]*$ ]] ||
+  die "--max-num-days must be an integer greater than 0, got '$MAX_NUM_DAYS'."
+
+acquire_lock "housekeep-$(lock_key "$TARGET_DIR")"
+shopt -s nullglob
+mkdir -p "$STATE_DIR"
+ledger="$STATE_DIR/delivered-$(lock_key "$TARGET_DIR").txt"
+
+# First run with a ledger: everything already in the target counts as delivered.
+if [[ ! -f $ledger ]]; then
+  # shellcheck disable=SC2231 # the suffix is a glob on purpose
+  for f in "$TARGET_DIR"/*$FETCHED_EPUB_SUFFIX_GLOB; do basename -- "$f"; done >"$ledger"
+  log "Created delivery ledger '$ledger' ($(wc -l <"$ledger") entries)."
 fi
 
-echo "Starting script <$PROGRAM_NAME> at $(date)."
-echo "Considering the following news sources: ${SOURCES[@]}."
-echo "Searching for new EPUBs in directory '${FROM_DIR}', which will also be cleaned."
-echo "New EPUBs will be moved to directory '${TARGET_DIR}', which will also be cleaned."
-echo "EPUBs older than $MAX_NUM_DAYS days will be deleted."
+changes=0
 
-# You could alternatively use `-print0` to handle paths containing spaces.
-to_copy_array=()
-for source in "${SOURCES[@]}"; do
-  find "${TARGET_DIR}" -name "*$source*" -mtime +$MAX_NUM_DAYS -type f -print -exec rm -rfv "{}" \;
-  find "${FROM_DIR}" -name "*$source*" -mtime +$MAX_NUM_DAYS -type f -print -exec rm -rfv "{}" \;
-  while IFS=  read -r -d $'\0'; do
-    to_copy_array+=("$REPLY")
-  done < <(find "${FROM_DIR}" -name "*$source*.epub" -type f -print0)
+# 1 + 2. Delete old fetched EPUBs.
+while IFS= read -r -d '' f; do
+  log "Deleted old EPUB '$f'."
+  changes=$((changes + 1))
+done < <(
+  find "$FROM_DIR" -maxdepth 1 -type f -name '*.epub' -mtime +"$MAX_NUM_DAYS" -print0 -delete
+  find "$TARGET_DIR" -maxdepth 1 -type f -name "*$FETCHED_EPUB_SUFFIX_GLOB" \
+    -mtime +"$MAX_NUM_DAYS" -print0 -delete
+)
+
+# 3. Copy new EPUBs of this reader's sources, once each.
+copied=0
+for src in "${SOURCES[@]}"; do
+  for f in "$FROM_DIR/$src"$FETCHED_EPUB_SUFFIX_GLOB; do
+    name=$(basename -- "$f")
+    grep -Fxq -- "$name" "$ledger" && continue
+    if [[ ! -e "$TARGET_DIR/$name" ]]; then
+      cp -p -- "$f" "$TARGET_DIR/$name"
+      log "Copied '$name' to '$TARGET_DIR'."
+      copied=$((copied + 1))
+    fi
+    printf '%s\n' "$name" >>"$ledger"
+  done
 done
+changes=$((changes + copied))
 
-# Use the -n flag to not overwrite existing.
-if (( ${#to_copy_array[@]} != 0 )); then
-  cp -n -v "${to_copy_array[@]}" "${TARGET_DIR}"
+# Forget ledger entries whose file is gone from FROM_DIR (it can never be copied
+# again), so the ledger stays small.
+tmp=$(mktemp "$ledger.XXXXXX")
+while IFS= read -r name; do
+  [[ -e "$FROM_DIR/$name" ]] && printf '%s\n' "$name"
+done <"$ledger" >"$tmp" || true
+mv -f -- "$tmp" "$ledger"
+
+if ((changes > 0 || VERBOSE)); then
+  log "Done for '$TARGET_DIR': copied $copied, deleted $((changes - copied))."
 fi
-echo "Copied ${#to_copy_array[@]} EPUBs to ${TARGET_DIR}."
-
-echo "Script <$PROGRAM_NAME> completed at $(date)."

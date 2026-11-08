@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# Pre-commit guard for this PUBLIC repo: blocks personal data and fetched content.
+# Enable once per clone with: git config core.hooksPath hooks
+set -euo pipefail
+
+fail=0
+block() {
+  echo "pre-commit: $*" >&2
+  fail=1
+}
+
+# 1. Files that must never be committed.
+while IFS= read -r f; do
+  case $f in
+    *.epub | rpi-bash_history | logs/* | state/* | fetched-news/* | rrecipes/*)
+      block "refusing to commit '$f' (runtime data or personal content)." ;;
+    config/*.example) ;; # also matches config/readers/*.example
+    config/*) block "refusing to commit '$f': real config is local-only, only *.example files are tracked." ;;
+    *-SOURCES | SINGLE-SOURCE) block "refusing to commit '$f': per-reader source lists belong in config/ (gitignored)." ;;
+  esac
+done < <(git diff --cached --name-only --diff-filter=ACMR)
+
+# 2. Email addresses in added lines, except placeholders and GitHub noreply addresses.
+emails=$(git diff --cached -U0 --diff-filter=ACMR -- . ':!hooks/pre-commit' |
+  grep -E '^\+[^+]' |
+  grep -oE '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}' |
+  grep -vE '@(example\.(com|org|net)|users\.noreply\.github\.com)$|^noreply@github\.com$' |
+  sort -u || true)
+if [[ -n $emails ]]; then
+  block "staged changes contain email addresses (use you@example.com placeholders):"$'\n'"$emails"
+fi
+
+# 3. Secrets scan, if gitleaks is installed (sudo apt install gitleaks / brew install gitleaks).
+if command -v gitleaks >/dev/null 2>&1; then
+  gitleaks protect --staged --redact --no-banner || block "gitleaks found potential secrets."
+else
+  echo "pre-commit: gitleaks not installed; skipping the secrets scan." >&2
+fi
+
+if ((fail)); then
+  echo "pre-commit: commit blocked. Bypass only if you are sure: git commit --no-verify" >&2
+  exit 1
+fi

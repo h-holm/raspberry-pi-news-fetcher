@@ -1,0 +1,10 @@
+# Alerting for failed fetches and sync problems, used by scripts/notify.sh.
+# Copy to config/notify.conf (gitignored) to enable. Without that file, no alerts
+# are sent. Set one or both of the options below.
+
+# Email via mutt, using the existing ~/.muttrc.
+NOTIFY_EMAIL="you@example.com"
+# Push notification via https://ntfy.sh (pick a hard-to-guess topic name).
+# NOTIFY_NTFY_URL="https://ntfy.sh/your-secret-topic"
+# Send the same alert at most once per this many hours.
+NOTIFY_MIN_INTERVAL_HOURS=12

@@ -1,0 +1,17 @@
+# Example crontab for the news fetcher. Install with `crontab -e`.
+# Paths assume the repo is cloned to ~/devel/raspberry-pi-news-fetcher.
+SHELL=/bin/bash
+PATH=/usr/local/bin:/usr/bin:/bin
+REPO=/home/pi/devel/raspberry-pi-news-fetcher
+
+# Fetch all sources every Friday at 15:00. Partial failures are fine: whatever
+# was fetched still gets delivered.
+0 15 * * 5  $REPO/scripts/fetch_news.sh --sources-file $REPO/config/fetch.sources --output-dir $REPO/fetched-news >> $REPO/logs/fetch_news.out 2>&1
+
+# Deliver to each reader every 30 minutes (housekeeping + Dropbox sync). Staggered
+# so the readers don't all hit the network at once.
+5,35 * * * *  $REPO/scripts/run_reader.sh reader-a >> $REPO/logs/reader-reader-a.out 2>&1
+10,40 * * * * $REPO/scripts/run_reader.sh reader-b >> $REPO/logs/reader-reader-b.out 2>&1
+
+# Rotate this repo's logs weekly (runs as the same user, with its own state file).
+30 3 * * 0  /usr/sbin/logrotate --state $REPO/logs/.logrotate.state $REPO/logrotate.conf >> $REPO/logs/logrotate.out 2>&1

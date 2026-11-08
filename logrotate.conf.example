@@ -1,0 +1,12 @@
+# logrotate config for this repo's logs, run as user pi from cron (see
+# crontab.example). Copy to logrotate.conf and replace the path if the repo lives
+# elsewhere: logrotate needs an absolute path and doesn't expand variables.
+/home/pi/devel/raspberry-pi-news-fetcher/logs/*.out {
+    weekly
+    rotate 8
+    compress
+    delaycompress
+    missingok
+    notifempty
+    copytruncate
+}
