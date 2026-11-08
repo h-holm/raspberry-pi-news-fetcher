@@ -139,7 +139,3 @@ macOS ships BSD tools and Bash 3.2, so run the tests on the Pi (or rely on CI). 
 ## Sending EPUBs by email
 
 See the [News Emailer](https://github.com/h-holm/news-emailer) repo, which emails EPUBs from `fetched-news/` (e.g. to Kindle addresses) using Mutt.
-
-## History
-
-The Pi once couldn't run a recent Calibre, so for a while fetching ran in a container on [K3s](https://k3s.io) as a Kubernetes CronJob. See the [`k8s-cronjob` branch](https://github.com/h-holm/raspberry-pi-news-fetcher/tree/k8s-cronjob).
