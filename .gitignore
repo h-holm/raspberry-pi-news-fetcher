@@ -20,3 +20,7 @@
 # Local scratch copies that must never be published.
 rpi-bash_history
 /rrecipes/
+
+# Local runtime state and generated config.
+/state/
+/logrotate.conf

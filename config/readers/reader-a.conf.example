@@ -1,0 +1,16 @@
+# Settings for one reader, used by scripts/run_reader.sh reader-a.
+# Copy to config/readers/<name>.conf (gitignored) and adjust.
+
+# Relative paths are relative to config/readers/.
+SOURCES_FILE="reader-a.sources"
+# Local folder that rclone bisync keeps in sync with the reader's Dropbox. The
+# reader's own books may live here too; housekeeping only ever deletes files
+# named "<Source>-YYYY-MM-DD-HHMM.epub".
+TARGET_DIR="$HOME/reader-a-dropbox-news"
+# rclone remote (see `rclone listremotes`) and the folder on it.
+RCLONE_REMOTE="reader-a-dropbox"
+REMOTE_DIR="Apps/Rakuten Kobo"
+# Delete fetched issues older than this many days (find -mtime +N).
+MAX_NUM_DAYS=6
+# Where fetch_news.sh writes (default: <repo>/fetched-news).
+# FROM_DIR="$HOME/devel/raspberry-pi-news-fetcher/fetched-news"

@@ -1,0 +1,8 @@
+# Every news source to fetch, one per line: the title of a Calibre built-in recipe
+# (see `ebook-convert --list-recipes`) or NAME for a local recipes/NAME.recipe.
+# It must include every source any reader or news-emailer recipient wants.
+# Blank lines and lines starting with '#' are ignored.
+The Economist
+Fokus
+NZZ
+Le Monde
