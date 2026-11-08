@@ -40,7 +40,7 @@ What I found on the Pi (2026-11-08):
 ---
 
 ## Implementation status (2026-11-08, branch `improvements/robustness-refactor`)
-Phases 1–8 are implemented. `make check` (shellcheck + 30 bats tests) passes on the Pi. **Live since 2026-11-08 03:09:** the Pi's clone is on this branch, the config is migrated into gitignored `config/` (3 readers), and the crontab now has 1 fetch line, 1 `run_reader.sh` line per reader and weekly logrotate. The news-emailer lines are unchanged, and the old crontab is in `~/crontab-backup-pre-golive-2026-11-08.txt`. **Remaining:** (1) watch Friday's 15:00 fetch and the following deliveries (`scripts/status.sh`), then merge to `main` and switch the Pi back to `main`; (2) the GitHub Support purge of PR refs; (3) optionally enable `config/notify.conf` (alerts are off by choice for now, since The Economist fails weekly); (4) The Economist stays as is for now.
+Phases 1–8 are implemented. `make check` (shellcheck + 30 bats tests) passes on the Pi. **Live since 2026-11-08 03:09:** the Pi's clone is on this branch, the config is migrated into gitignored `config/` (3 readers), and the crontab now has 1 fetch line, 1 `run_reader.sh` line per reader and weekly logrotate. The news-emailer lines are unchanged, and the old crontab is in `~/crontab-backup-pre-golive-2026-11-08.txt`. **Remaining:** (1) watch Friday's 15:00 fetch and the following deliveries (`scripts/status.sh`), then merge to `main` and switch the Pi back to `main`; (2) optionally enable `config/notify.conf` (alerts are off by choice for now, since The Economist fails weekly); (3) The Economist stays as is for now.
 
 Deviations from the plan, decided while implementing:
 - **Target-dir cleanup** deletes old files matching the fetcher's naming `*-YYYY-MM-DD-HHMM.epub` for *any* source, not only the reader's current ones. This also cleans orphans when a source is dropped, and personal books never match the pattern. Tested.
@@ -67,7 +67,7 @@ Deviations from the plan, decided while implementing:
    ```
    Afterwards, check `calibre --version`, `rclone --version` and `crontab -l`, and update the versions in the README.
 
-## Phase P: Privacy audit and history rewrite — ✅ DONE 2026-11-08 (EPUBs removed, emails → noreply, force-pushed; Mac+Pi clones reset; pre-rewrite bundle in ~/Backups/. SHAs below are pre-rewrite; main is now e4ab0dd. Remaining: GitHub Support purge of PR refs, guardrails)
+## Phase P: Privacy audit and history rewrite — ✅ DONE 2026-11-08 (EPUBs removed, emails → noreply, force-pushed; Mac+Pi clones reset; pre-rewrite bundle in ~/Backups/. SHAs below are pre-rewrite; main is now e4ab0dd. Guardrails done; GitHub Support purge of PR refs dropped by decision 2026-11-08)
 Audit of all 159 commits on all branches (2026-11-08). The repo is **already PUBLIC**, with 0 forks, 1 star and 9 PRs.
 - **No secrets found.** No tokens, rclone config, app keys or recipe credentials. The CI workflows only reference `${{ secrets.* }}`. The committed `logs/run_rclonesync.out` was empty.
 - **Found, and worth removing:**
@@ -81,7 +81,7 @@ Audit of all 159 commits on all branches (2026-11-08). The repo is **already PUB
   # optional: add --mailmap my.mailmap  (lines: "Henrik Holm <33653878+h-holm@users.noreply.github.com> <<old-work-email>>", same for the other old email)
   git push --force --mirror   # rewrites main + k8s-cronjob
   ```
-  Old SHAs stay reachable on GitHub through the 9 PRs' `refs/pull/*`. To purge them fully, open a GitHub Support "remove sensitive data / cached views" request after the push. Then, on the Pi and the Mac: `git fetch && git reset --hard origin/main`. Untracked config, logs and recipes survive this. Back up first (Phase −1).
+  Old SHAs stay reachable on GitHub through the 9 PRs' `refs/pull/*`. (Decided 2026-11-08: not worth it, skipped.) To purge them fully, one could open a GitHub Support "remove sensitive data / cached views" request after the push. Then, on the Pi and the Mac: `git fetch && git reset --hard origin/main`. Untracked config, logs and recipes survive this. Back up first (Phase −1).
   Commit dates and authorship are kept, but every SHA changes, which breaks PR links to commits.
 - **Guardrails going forward:**
   - Set the noreply email for this repo: `git config user.email 33653878+h-holm@users.noreply.github.com`, on both the Mac and the Pi.
