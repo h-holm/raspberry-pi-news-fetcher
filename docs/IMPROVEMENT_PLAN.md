@@ -39,6 +39,16 @@ What I found on the Pi (2026-11-08):
 
 ---
 
+## Implementation status (2026-11-08, branch `improvements/robustness-refactor`)
+Phases 1–8 are implemented. `make check` (shellcheck + 29 bats tests) passes on the Pi, in a scratch copy at `~/rpnf-test`. **Not yet done:** the rollout (steps 2–4 below: manual runs on the Pi, switching the crontab, migrating the per-reader files into `config/`, enabling `config/notify.conf`), and the GitHub Support purge of PR refs.
+
+Deviations from the plan, decided while implementing:
+- **Target-dir cleanup** deletes old files matching the fetcher's naming `*-YYYY-MM-DD-HHMM.epub` for *any* source, not only the reader's current ones. This also cleans orphans when a source is dropped, and personal books never match the pattern. Tested.
+- **`--force` is kept** (no `--max-delete 50`). Weekly rotation routinely deletes ≥50% of a small reader folder. Wipe protection comes from the sentinel instead: a missing `RCLONE_TEST` is only recreated on a side that still has other files, and a completely empty side aborts the run with an alert.
+- **Delivery ledger added** (`state/delivered-*.txt`). Each issue is copied to a reader once, so an issue the reader deleted is not copied back every 10–30 minutes, as the old `cp -n` loop did.
+- `--init` on `run_rclone_bisync.sh` creates sentinels on both sides and runs the initial `--resync-mode newer`.
+- Notifications are deduplicated: the same subject is sent at most once per 12h.
+
 ## Phase −1: Back up, then update the Pi — ✅ DONE 2026-11-08 (rclone now v1.76.0, calibre still 8.5)
 1. **Back up** to the Mac, run from the Mac. It covers both repos with their untracked config, recipes and logs, the crontab, rclone and mutt config (**contains secrets, so keep the archive private and out of git or cloud folders**), bisync state, and shell dotfiles:
    ```shell

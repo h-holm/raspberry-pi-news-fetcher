@@ -1,91 +1,145 @@
 # Raspberry Pi News Fetcher
 
-[Bash scripts](./scripts) and steps for configuring a Raspberry Pi to:
+[Bash scripts](./scripts) and cron jobs that turn a Raspberry Pi into a weekly newspaper delivery service for e-readers:
 
-- scrape news into EPUBs using [Calibre's `ebook-convert`](https://manual.calibre-ebook.com/generated/en/cli-index.html) command,
-- sync EPUBs to a [Dropbox](https://www.dropbox.com) folder via [`rclone`](https://rclone.org),
-- perform housekeeping tasks such as deleting EPUBs older than `--max-num-days`,
-- configuring the above steps to run recurringly as cron jobs.
+1. **Fetch:** [Calibre's `ebook-convert`](https://manual.calibre-ebook.com/generated/en/ebook-convert.html) scrapes news sources into EPUBs.
+2. **Deliver:** for each reader, the right EPUBs are copied into a local folder, old issues are removed, and the folder is synced bidirectionally with the reader's Dropbox using [`rclone bisync`](https://rclone.org/bisync/).
+3. **Read:** an e-reader with Dropbox integration (e.g. a [Kobo](https://help.kobo.com/hc/en-us/articles/360032442774-Kobo-Libra-H2O), which uses `Apps/Rakuten Kobo`) downloads the new issues.
 
-The set-up should work on any Unix/Linux machine supporting cron jobs, `rclone` and a decently recent version of Calibre.
-
-By having the same Dropbox folder configured on an e-reader device (in my case a [Kobo Libra H2O](https://help.kobo.com/hc/en-us/articles/360032442774-Kobo-Libra-H2O)), scraped news are automatically synced directly to your hands and eyes.
-
-## 1. Requirements
-
-Decently recent versions of:
-
-- Calibre,
-- `rclone`,
-- Bash.
-
-My 8GB Raspberry Pi 4 Model B has the following specs and package versions:
-
-```shell
-$ uname -a
-Linux raspberrypi 6.12.47+rpt-rpi-v8 #1 SMP PREEMPT Debian 1:6.12.47-1+rpt1 (2025-09-16) aarch64 GNU/Linux
-$ calibre --version
-calibre (calibre 8.5)
-$ rclone --version
-rclone v1.71.2
-- os/version: raspbian 13.1 (64 bit)
-- os/kernel: 6.12.47+rpt-rpi-v8 (aarch64)
-- os/type: linux
-- os/arch: arm64 (ARMv8 compatible)
-- go/version: go1.25.3
-- go/linking: static
-- go/tags: none
-$ bash --version
-GNU bash, version 5.2.37(1)-release (aarch64-unknown-linux-gnu)
+```text
+                      ┌───────────────────────┐
+config/fetch.sources ─▶ scripts/fetch_news.sh │  Fridays, via cron
+                      └───────────┬───────────┘
+                                  ▼
+                            fetched-news/  ─────────────▶ news-emailer (optional, separate repo)
+                                  │
+              scripts/run_reader.sh <reader>  (every 30 min, per reader)
+              ├─ housekeep_news.sh: copy this reader's sources once, delete old issues
+              └─ run_rclone_bisync.sh: local folder ⇄ Dropbox ⇄ e-reader
 ```
 
-### 1.1 Calibre Set-Up
+A source that fails to fetch never blocks the others. Whatever was fetched is still delivered, and failures are logged (and optionally emailed, see [Alerts](#alerts)).
 
-```shell
-sudo apt-get update && sudo apt-get upgrade && sudo apt-get install calibre
-```
+## Requirements
 
-### 1.2 `rclone` Set-Up
+Developed and run on a Raspberry Pi 4 (Raspberry Pi OS / Debian 13, aarch64). Anything Debian-like with GNU coreutils, util-linux (`flock`, `getopt`) and cron should work.
 
-`rclone` was installed and configured using the steps outlined in [rclone-setup.md](rclone-setup.md). Note that `rclone` should be configured to sync *bidirectionally* to ensure that the deletion of old files from the local Dropbox folder is mirrored on the remote.
+| Tool | Version on my Pi | Install |
+|---|---|---|
+| Bash | 5.2 | preinstalled (needs ≥ 4.4) |
+| Calibre | 8.5 | `sudo apt install calibre` |
+| rclone | 1.76 | see [rclone-setup.md](rclone-setup.md) (needs ≥ 1.66) |
+| logrotate | 3.22 | `sudo apt install logrotate` |
+| mutt (optional, alerts) | 2.2 | `sudo apt install mutt` |
+| shellcheck, bats (development) | 0.10, 1.11 | `sudo apt install shellcheck bats` |
 
-### 1.3 Ensure Scripts Are Executable
-
-```shell
-chmod u+x scripts/*.sh
-```
-
-## 2. Structure
+## Layout
 
 ```text
 .
-├── README.md
-├── SOURCES                   # A line-by-line text file of news sources to scrape.
-├── rclone-setup.md           # Guide on configuring `rclone` to sync a local directory with a remote Dropbox folder.
-├── recipes                   # If you wish to use local Calibre `.recipe` files, they should be put here.
-└── scripts
-    ├── fetch_news.sh         # A script that uses Calibre's `ebook-convert` command to scrape news into EPUBs.
-    ├── housekeep_news.sh     # A script that copies EPUBs from one directory to another, and deletes EPUBs older than `--max-num-days`.
-    └── run_rclone_bisync.sh  # A script that uses `rclone` to sync a local directory with a remote Dropbox folder.
+├── config/                 # Local configuration, gitignored except the *.example templates
+│   ├── fetch.sources       # Every source to fetch, one per line
+│   ├── notify.conf         # Optional alerting settings
+│   └── readers/<name>.conf # One file per reader, plus a <name>.sources list
+├── crontab.example         # The cron jobs to install
+├── logrotate.conf.example  # Weekly log rotation, run from cron as the same user
+├── recipes/                # Local Calibre recipes; <Source>.recipe overrides the built-in one
+├── scripts/
+│   ├── fetch_news.sh       # Fetches all sources into EPUBs
+│   ├── housekeep_news.sh   # Delivers EPUBs to one reader folder and deletes old issues
+│   ├── run_rclone_bisync.sh# Hardened rclone bisync of one reader folder
+│   ├── run_reader.sh       # housekeep + bisync for one reader, from its config
+│   ├── notify.sh           # Email/ntfy alerts (opt-in)
+│   ├── status.sh           # Health overview
+│   ├── update_recipe.sh    # Pulls the latest upstream version of a recipe
+│   ├── test_recipe.sh      # Quick test of one recipe
+│   └── lib/common.sh       # Shared helpers
+├── tests/                  # bats tests (fake ebook-convert/rclone, no network)
+└── hooks/pre-commit        # Blocks personal data/EPUBs from being committed
 ```
 
-The [./scripts/fetch_news.sh](./scripts/fetch_news.sh) checks whether a recipe exists locally. If that is the case, the local recipe takes precedence over Calibre's built-in recipe. If a source specified in the [SOURCES](SOURCES) file exists neither as a local recipe in the [./recipes](./recipes) directory nor among Calibre's built-in recipes, the [./scripts/fetch_news.sh](./scripts/fetch_news.sh) script skips that source. Refer to the [Calibre GitHub repo](https://github.com/kovidgoyal/calibre/tree/master/recipes) for a list of available scraping *recipes*. You can also [write your own Calibre news recipe](https://manual.calibre-ebook.com/news_recipe.html).
+Runtime output (`fetched-news/`, `logs/`, `state/`) stays on the Pi and is never committed.
 
-## 3. Example Crontab
+## Setup
 
-```text
-# Run the Calibre news scraping every Friday at 09:00.
-0 9 * * 5 /PATH/TO/REPO/fetch_news.sh --sources-file /PATH/TO/REPO/SOURCES --output-dir /PATH/TO/FETCHED-NEWS >> /PATH/TO/REPO/logs/fetch_news.out 2>&1
-# Run the housekeeping every 30 minutes.
-*/30 * * * * /PATH/TO/REPO/scripts/housekeep_news.sh --sources-file /PATH/TO/REPO/SOURCES --from-dir /PATH/TO/FETCHED-NEWS --target-dir /PATH/TO/LOCAL_DROPBOX_DIR --max-num-days 6 >> /PATH/TO/REPO/logs/housekeep_news.out 2>&1
-# Run the `rclone` syncing every 30 minutes.
-*/30 * * * * /PATH/TO/REPO/scripts/run_rclone_bisync.sh --local-dropbox-dir /PATH/TO/LOCAL_DROPBOX_DIR --remote-name "REMOTE_NAME" --remote-dropbox-dir "REMOTE_DIR" >> /PATH/TO/REPO/logs/run_rclone_bisync.out 2>&1
+```shell
+git clone https://github.com/h-holm/raspberry-pi-news-fetcher.git ~/devel/raspberry-pi-news-fetcher
+cd ~/devel/raspberry-pi-news-fetcher
+git config core.hooksPath hooks      # enable the privacy pre-commit hook
+
+cp config/fetch.sources.example config/fetch.sources                # then edit
+cp config/readers/reader-a.conf.example config/readers/alice.conf   # one per reader
+cp config/readers/reader-a.sources.example config/readers/alice.sources
+cp logrotate.conf.example logrotate.conf                            # adjust the path if needed
 ```
 
-## 4. Programmatically Sending Scraped News EPUBs as Email Attachments
+Configure an rclone remote for each reader's Dropbox following [rclone-setup.md](rclone-setup.md). Then initialise the sync once per reader, which creates the `RCLONE_TEST` sentinel on both sides and runs the first resync:
 
-See [the "News Emailer" repo](https://github.com/h-holm/news-emailer) for a guide on setting up [Mutt](http://www.mutt.org) to programmatically (and recurringly, if need be) send files as attachments.
+```shell
+scripts/run_rclone_bisync.sh --init -l ~/alice-dropbox-news -n alice-dropbox -r "Apps/Rakuten Kobo"
+```
 
-## 5. Scheduling the Scraping Using a Kubernetes (K8s) CronJob
+Finally, install the cron jobs from [crontab.example](crontab.example) with `crontab -e`, using one `run_reader.sh` line per reader.
 
-In the past, I was unable to install Calibre directly on my Raspberry Pi due to it being incompatible with newer versions of Calibre. For this reason, I set up a [K3s](https://k3s.io) cluster on my Raspberry Pi, built a container image with Calibre installed, and configured a [K8s CronJob](https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs) to run the Calibre-based news-scraping workload. See the [`k8s-cronjob` branch](https://github.com/h-holm/raspberry-pi-news-fetcher/tree/k8s-cronjob) for more info.
+### Adding a reader
+
+Add `config/readers/<name>.conf` and `<name>.sources`, make sure their sources are in `config/fetch.sources`, set up the rclone remote, run the `--init` command above, and add a cron line. Check with `scripts/run_reader.sh <name> --dry-run -v`.
+
+## Recipes
+
+A source name is either the title of a [Calibre built-in recipe](https://github.com/kovidgoyal/calibre/tree/master/recipes) (`ebook-convert --list-recipes`) or `NAME`, for a local `recipes/NAME.recipe`. A local recipe takes precedence over a built-in one. That's useful because the Calibre in apt often ships outdated recipes.
+
+```shell
+scripts/update_recipe.sh Fokus                  # fetches upstream recipes/fokus.recipe
+scripts/update_recipe.sh NZZ nzz_ger.recipe     # upstream file name differs from the source name
+git diff recipes/ && scripts/test_recipe.sh NZZ && git commit -am "Update NZZ recipe"
+```
+
+Recipe history lives in git, so there's no need for dated backup copies. You can also [write your own recipe](https://manual.calibre-ebook.com/news_recipe.html).
+
+## How deletion works
+
+- `fetched-news/`: EPUBs older than `MAX_NUM_DAYS` are deleted, whatever their source.
+- Reader folders: only files named like the fetcher's output, `<Source>-YYYY-MM-DD-HHMM.epub`, are ever deleted. Readers can keep their own books in the same Dropbox folder.
+- Each issue is copied to a reader only once (a ledger lives in `state/`). If a reader deletes an issue, it is not copied back.
+
+## Sync robustness
+
+`rclone bisync` refuses to sync an empty folder, and used to require a manual `--resync` every time a reader folder briefly emptied between weekly issues. `run_rclone_bisync.sh` prevents and recovers from that:
+
+- A `RCLONE_TEST` sentinel lives on both sides, checked with `--check-access`, so a folder is never empty. The Kobo ignores the file.
+- If a side is *completely* empty (not even the sentinel), the script assumes a wipe and alerts instead of syncing.
+- `--resilient --recover` let runs retry after transient errors. If bisync still demands a resync, the script runs one automatic `--resync-mode newer` and alerts. A resync only copies; it never deletes.
+
+## Alerts
+
+Copy `config/notify.conf.example` to `config/notify.conf` to get alerts by email (through mutt and your `~/.muttrc`) and/or [ntfy](https://ntfy.sh). You'll be alerted on failed sources and sync problems. Each distinct alert is sent at most once per 12 hours.
+
+## Troubleshooting
+
+```shell
+scripts/status.sh                         # newest issue per reader, last sync, last failures
+tail -n 50 logs/fetch_news.out            # last fetch run
+ls logs/fetch/                            # full ebook-convert output of failed sources
+scripts/test_recipe.sh "The Economist" -v # debug one recipe
+scripts/run_reader.sh alice --dry-run -v  # what would the sync do?
+```
+
+- **`HTTP Error 403: Forbidden`**: the site blocks the recipe. Try `update_recipe.sh` with the latest upstream recipe.
+- **Bisync aborts with "Must run --resync"**: the script retries with a resync automatically. If that also fails, run the command printed in the log by hand.
+
+## Development
+
+```shell
+make check   # shellcheck + bats; run on the Pi or another GNU/Linux machine
+```
+
+macOS ships BSD tools and Bash 3.2, so run the tests on the Pi (or rely on CI). To deploy: merge to `main`, then `git pull` on the Pi. The Pi pulls over HTTPS and never pushes.
+
+## Sending EPUBs by email
+
+See the [News Emailer](https://github.com/h-holm/news-emailer) repo, which emails EPUBs from `fetched-news/` (e.g. to Kindle addresses) using Mutt.
+
+## History
+
+The Pi once couldn't run a recent Calibre, so for a while fetching ran in a container on [K3s](https://k3s.io) as a Kubernetes CronJob. See the [`k8s-cronjob` branch](https://github.com/h-holm/raspberry-pi-news-fetcher/tree/k8s-cronjob).
